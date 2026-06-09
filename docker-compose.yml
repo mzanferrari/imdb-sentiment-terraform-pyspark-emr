@@ -1,0 +1,28 @@
+# Development container compose file.
+#
+# Mounts:
+#   - The repo (read-write) so changes on the host are reflected inside
+#   - The host's ~/.aws (read-only) so the container uses your credentials
+#     without baking them into the image
+#   - The host's ~/.gitconfig (read-only) so commits made inside the container
+#     are attributed correctly
+
+services:
+  mz-p2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: imdb-sentiment-dev:local
+    container_name: mz-p2-dev
+    volumes:
+      - .:/workspace:rw
+      - ${HOME}/.aws:/home/developer/.aws:ro
+      - ${HOME}/.gitconfig:/home/developer/.gitconfig:ro
+    working_dir: /workspace
+    environment:
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-eu-west-1}
+      - AWS_PROFILE=${AWS_PROFILE:-default}
+      - PYTHONUNBUFFERED=1
+    stdin_open: true
+    tty: true
+    command: /bin/bash

@@ -1,0 +1,6 @@
+default: true
+MD013: false        # line length
+MD033: false        # inline HTML (we use <br/>)
+MD041: false        # first line should be top-level heading
+MD034: false        # bare URLs (badges)
+MD024: false        # no duplicate headings (ADR uses "Context", "Decision" repeatedly across files)

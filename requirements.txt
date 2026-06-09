@@ -1,0 +1,14 @@
+# Fallback requirements file for environments without uv/poetry support
+# (e.g., EMR cluster bootstrap, simple pip install -r workflows).
+#
+# For local development, prefer:   uv sync --all-extras
+# Or:                              pip install -e ".[dev]"
+#
+# This file is intentionally a thin subset of pyproject.toml runtime deps,
+# pinned to compatible upper bounds.
+
+pyspark>=3.5,<4.0
+boto3>=1.34,<2.0
+botocore>=1.34,<2.0
+requests>=2.31,<3.0
+tqdm>=4.66,<5.0

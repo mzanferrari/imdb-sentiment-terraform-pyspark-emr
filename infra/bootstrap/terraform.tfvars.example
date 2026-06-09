@@ -1,0 +1,18 @@
+# Copy this file to `terraform.tfvars` and fill in your values.
+# The real `terraform.tfvars` is gitignored - never commit it.
+
+# AWS region. Default: eu-west-1 (Ireland) - see docs/adrs/0002-aws-region.md
+region = "eu-west-1"
+
+# Short project namespace (lowercase, dash-separated).
+# Used to construct bucket names: ${project_name}-terraform-${project_id}
+project_name = "mz-p2"
+
+# Your AWS Account ID (12 digits). Find it with:
+#   aws sts get-caller-identity --query Account --output text
+# This is NOT a secret in the strict sense, but is gitignored to avoid
+# unnecessary exposure on a public portfolio repo.
+project_id = "<your-12-digit-aws-account-id>"
+
+# Enable versioning on the state bucket. Always "Enabled" except in throwaway demos.
+versioning_bucket = "Enabled"

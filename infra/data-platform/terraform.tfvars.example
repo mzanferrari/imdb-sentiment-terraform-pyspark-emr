@@ -1,0 +1,34 @@
+# Copy this file to `terraform.tfvars` and fill in your values.
+# The real `terraform.tfvars` is gitignored - never commit it.
+
+# AWS region (must match the one used in bootstrap/)
+region = "eu-west-1"
+
+# Short project namespace - must match bootstrap/
+project_name = "mz-p2"
+
+# Your AWS Account ID
+project_id = "<your-12-digit-aws-account-id>"
+
+# IAM username that runs Terraform. Used to attach the state-bucket access policy.
+# Find with: aws iam get-user --query 'User.UserName' --output text
+terraform_user = "<your-iam-username>"
+
+# Enable versioning on the project bucket
+versioning_bucket = "Enabled"
+
+# Local paths to upload to the project bucket. Defaults usually fine.
+files_bucket = "../../src/pipeline"
+files_data   = "../../data"
+files_bash   = "../../scripts"
+
+# DEV ONLY. Set to true only when you understand `terraform destroy` will
+# permanently empty the bucket. Default false is intentional - accidents cost.
+s3_force_destroy = false
+
+# Environment label used in tags
+environment = "dev"
+
+# Email for budget/idle cost alerts. Copy to terraform.tfvars and set your real
+# address there (terraform.tfvars is gitignored). Leave empty to skip alerts.
+alert_email = "your-alerts@example.com"
