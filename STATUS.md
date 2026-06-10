@@ -12,6 +12,7 @@ Hardening the original course-derived project into a production-grade portfolio 
 
 ## Recent milestones
 
+- `2026-06-09` - **Phase 1 close - containerized dev environment**: multi-stage Dockerfile (Python 3.11, Java 17, Terraform 1.15.5, tflint 0.63.1, AWS CLI, jq, uv 0.11.19, checkov), docker-compose with isolated venv volume, devcontainer with postCreate. Full test suite passes inside the container (pytest + Spark). Terraform `required_version` pinned to `~> 1.15` across all modules; submodule lock files removed from tracking.
 - `2026-06-05` - **Audit V3-V5 + Phase 0/1 execution**: fixed the `pipeline.zip` upload gap (build artifact never reached EMR); IAM least-privilege policy; EMR Python 3.11 bootstrap; FinOps guardrails in Terraform (budget + idle alarm); `ml.py` and `s3_io.py` unit tests (coverage ~48%); local environment hardening (numpy, Python pin, Java, ruff bump). Internal audit docs gitignored via glob.
 - `2026-05-20` - **Audit V2 hardening pass**: 4 runtime-breaking bugs corrected (EMR step syntax, missing pipeline.zip, LoggerAdapter sentinel capture, PT-BR SSM parameter name); 12 high-severity issues resolved (project_name decoupled from bucket parsing, CrossValidatorModel type, explicit CSV schema, etc.); language-hygiene hook added; `tfsec` migrated to `trivy`/`checkov`.
 - `2026-05-19` - **Initial audit & refactor pass**: secrets removed from versioned files, Python code refactored with type hints + structured logging, IaC modularized, CI added, ADRs documented.
@@ -57,7 +58,7 @@ Hardening the original course-derived project into a production-grade portfolio 
 - [x] Professional `README.md` with Mermaid architecture diagram
 - [x] `docs/ARCHITECTURE.md`
 - [x] `docs/DEPLOYMENT.md`
-- [x] 5 ADRs (`0001`-`0005`)
+- [x] 6 ADRs (`0001`-`0006`)
 - [x] `docs/ROADMAP.md` (phased plan)
 
 ### Automation & CI
@@ -76,7 +77,7 @@ Hardening the original course-derived project into a production-grade portfolio 
 
 - [x] Document Java 17 (JRE) as a local prerequisite (PySpark needs a JVM)
 - [x] Filter PySpark's socket `ResourceWarning` in pytest (known teardown artifact)
-- [ ] Devcontainer pinning Python 3.11 + Java 17 for dev/prod parity (H2)
+- [x] Devcontainer with Python 3.11 + Java 17 + tooling for dev/prod parity
 
 ### Tests
 

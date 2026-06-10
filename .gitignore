@@ -85,8 +85,11 @@ override.tf.json
 !*.tfvars.example
 !*.tfvars.json.example
 
-# .terraform directories and lock
+# .terraform directories
 .terraform/
+
+# Version lock: keep root stacks, ignore submodule copies (recreated by validate)
+infra/data-platform/modules/**/.terraform.lock.hcl
 
 # CLI configuration
 .terraformrc

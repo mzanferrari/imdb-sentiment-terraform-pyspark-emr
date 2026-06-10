@@ -4,7 +4,7 @@
 # recreate via `terraform import` if lost).
 
 terraform {
-  required_version = "~> 1.14"
+  required_version = "~> 1.15"
 
   required_providers {
     aws = {

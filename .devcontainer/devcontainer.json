@@ -1,0 +1,19 @@
+{
+  "name": "imdb-sentiment-dev",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "mz-p2",
+  "workspaceFolder": "/workspace",
+  "postCreateCommand": "uv venv --python 3.11 && uv pip install -e '.[dev]' && pre-commit install",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "hashicorp.terraform"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/workspace/.venv/bin/python"
+      }
+    }
+  }
+}

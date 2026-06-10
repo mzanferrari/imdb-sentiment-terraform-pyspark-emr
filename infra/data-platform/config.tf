@@ -6,7 +6,7 @@
 #   terraform init -backend-config=scripts/backend.conf
 
 terraform {
-  required_version = "~> 1.14"
+  required_version = "~> 1.15"
 
   required_providers {
     aws = {

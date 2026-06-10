@@ -150,6 +150,11 @@ flowchart LR
 ├── .pre-commit-config.yaml
 ├── pyproject.toml                      # Python deps & tool config
 ├── requirements.txt                    # Fallback for non-uv users
+├── .devcontainer/
+│   └── devcontainer.json               # VS Code dev container config
+├── .dockerignore
+├── Dockerfile
+├── docker-compose.yml
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile                            # Common commands
@@ -164,7 +169,7 @@ flowchart LR
 |---|---|---|
 | AWS account | - | Free tier is **not** sufficient; cluster will incur charges. Budget alarm recommended. |
 | AWS CLI | v2.15+ | Configured with credentials in `~/.aws/credentials` |
-| Terraform | 1.14+ | Required for native S3 state locking |
+| Terraform | 1.15+ | Required for native S3 state locking |
 | Docker | 24+ | Alternative to local installs |
 | Python | 3.11 | Local pipeline runs and ingestion. Not 3.12 - PySpark 3.5 needs `distutils` (removed in 3.12). |
 | Java (JRE) | 17 | Required by PySpark to run Spark locally (tests + local runs). `openjdk-17-jre-headless` |
