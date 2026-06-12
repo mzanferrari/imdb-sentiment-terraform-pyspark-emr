@@ -26,7 +26,7 @@ def _local_config() -> PipelineConfig:
         bucket_name="test-bucket",
         project_name="test-project",
         region="eu-west-1",
-        path_raw_data="s3://test-bucket/dados/",
+        path_raw_data="s3://test-bucket/data/",
         path_output="s3://test-bucket/output/",
         path_logs="s3://test-bucket/logs/",
         is_emr=False,

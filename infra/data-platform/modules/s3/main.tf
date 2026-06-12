@@ -72,7 +72,7 @@ resource "aws_ssm_parameter" "bucket_name" {
 resource "aws_ssm_parameter" "path_raw_data" {
   name  = "/${var.project_name}/s3/path_raw_data"
   type  = "String"
-  value = "s3://${var.project_name}-${var.project_id}/dados/"
+  value = "s3://${var.project_name}-${var.project_id}/data/"
   tags  = var.common_tags
 }
 

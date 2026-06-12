@@ -3,7 +3,7 @@
 # Three categories:
 #   - pipeline/: Python source files (main.py, config.py, etc.)
 #   - pipeline/pipeline.zip: built artifact, uploaded separately from build/
-#   - dados/:    raw dataset (dataset.csv from scripts/ingest_data.py)
+#   - data/:     raw dataset (dataset.csv from scripts/ingest_data.py)
 #   - scripts/:  shell scripts (bootstrap_emr.sh runs on every EMR node)
 #
 # fileset() is recursive (**) and re-evaluated on each `terraform plan`.
@@ -62,7 +62,7 @@ resource "aws_s3_object" "raw_data" {
   ])
 
   bucket = "${var.project_name}-${var.project_id}"
-  key    = "dados/${each.value}"
+  key    = "data/${each.value}"
   source = "${var.files_data}/${each.value}"
   etag   = filemd5("${var.files_data}/${each.value}")
 }
