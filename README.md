@@ -299,7 +299,9 @@ make ci
 make lint              # ruff check + ruff format --check
 make typecheck         # mypy --strict src/
 make test              # pytest -v --cov=src tests/
-make iac-validate      # terraform fmt -check + tflint + trivy
+make iac-fmt-check     # terraform fmt -check (no rewrite)
+make iac-validate      # terraform validate on both stacks
+make iac-security      # trivy config scan
 ```
 
 Local pipeline run for an end-to-end smoke test (after `pip install -e .` or `uv sync`):
