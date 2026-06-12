@@ -52,38 +52,20 @@ LABEL org.opencontainers.image.title="imdb-sentiment-dev" \
 # openjdk-17-jre-headless - required by the Spark engine bundled in pyspark
 # jq                      - used by the terraform_validate pre-commit hook
 # git, ca-certificates    - baseline dev + TLS
+#
+# apt-get upgrade applies OS security patches over the base image. This trades
+# bit-for-bit build determinism (the base tag is mobile) for fresher CVE fixes.
+# Acceptable here: this is a dev/IaC image, not a production artifact (ADR-0006).
+# apt-get clean + rm lists keeps the layer small.
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         git \
         jq \
         openjdk-17-jre-headless && \
-    rm -rf /var/lib/apt/lists/*
-
-# Binaries from the download stage
-COPY --from=downloads /downloads/terraform /usr/local/bin/terraform
-COPY --from=downloads /downloads/tflint /usr/local/bin/tflint
-COPY --from=downloads /downloads/aws /tmp/aws-cli/aws
-RUN /tmp/aws-cli/aws/install && rm -rf /tmp/aws-cli
-
-# ─── STAGE 2 - RUNTIME IMAGE ──────────────────────────────────────────────────
-FROM python:3.11-slim-bookworm
-
-LABEL org.opencontainers.image.title="imdb-sentiment-dev" \
-      org.opencontainers.image.description="Dev container: PySpark tests, Terraform, lint gate" \
-      org.opencontainers.image.licenses="MIT"
-
-# openjdk-17-jre-headless - required by the Spark engine bundled in pyspark
-# jq                      - used by the terraform_validate pre-commit hook
-# git, ca-certificates    - baseline dev + TLS
-# hadolint ignore=DL3008,DL3009
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        git \
-        jq \
-        openjdk-17-jre-headless && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Binaries from the download stage

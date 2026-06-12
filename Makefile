@@ -5,9 +5,10 @@
 # Engineering repos.
 
 .DEFAULT_GOAL := help
-.PHONY: help install lint format typecheck lang-check test ci pre-commit \
-        ingest package deploy bootstrap data-platform destroy iac-fmt \
-        iac-validate iac-security clean docker-build docker-up docker-down
+.PHONY: help install install-pip lint format typecheck lang-check test test-fast \
+        ci pre-commit ingest ingest-force package deploy bootstrap data-platform \
+        destroy iac-fmt iac-fmt-check iac-validate iac-security clean clean-tf \
+        docker-build docker-up docker-shell docker-down
 
 # Variables configurable via environment or command line
 PYTHON ?= python3
@@ -57,7 +58,7 @@ test-fast: ## Run only fast tests (skip slow/integration)
 pre-commit: ## Run all pre-commit hooks on all files
 	$(UV) run pre-commit run --all-files
 
-ci: lint typecheck lang-check test iac-fmt iac-validate ## Run the full CI suite locally
+ci: lint typecheck lang-check test iac-fmt-check iac-validate ## Run the full CI suite locally
 
 # ─── PIPELINE PACKAGING ───────────────────────────────────────────────────────
 package: ## Build pipeline.zip for spark-submit --py-files
@@ -76,6 +77,9 @@ ingest-force: ## Force re-download of the dataset
 # ─── INFRASTRUCTURE ───────────────────────────────────────────────────────────
 iac-fmt: ## Run terraform fmt on all Terraform files
 	$(TF) fmt -recursive infra/
+
+iac-fmt-check: ## Check terraform formatting without modifying files (CI-safe)
+	$(TF) fmt -check -recursive infra/
 
 iac-validate: ## Validate Terraform syntax
 	cd $(INFRA_BOOTSTRAP_DIR) && $(TF) init -backend=false && $(TF) validate
