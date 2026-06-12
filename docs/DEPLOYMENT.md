@@ -13,7 +13,7 @@ Before running anything that touches AWS:
 - [ ] Verify region: `aws configure get region` (project default is `eu-west-1`)
 - [ ] Verify identity: `aws sts get-caller-identity`
 - [ ] IAM permissions for: `s3:*`, `ec2:*` (for EMR), `elasticmapreduce:*`, `iam:CreateRole` + `iam:PutRolePolicy`, `ssm:PutParameter` + `ssm:GetParameter`
-- [ ] Terraform 1.14+ installed (`terraform version`)
+- [ ] Terraform 1.15+ installed (`terraform version`)
 - [ ] Python 3.11 installed, not 3.12 (`python --version`) - PySpark 3.5 needs `distutils`
 - [ ] `uv` installed (`uv --version`) - optional but recommended
 - [ ] Docker (optional) installed (`docker --version`)
@@ -59,44 +59,9 @@ These `.tfvars` files are gitignored. They will **never** be committed. Keep the
 
 ---
 
-## Step 2 - Set a budget alarm
+## Step 2 - Cost alerts
 
-This step is not optional. The cluster, if forgotten, will accumulate charges silently.
-
-```bash
-# Replace with your email
-NOTIFY_EMAIL="you@example.com"
-ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-
-cat > /tmp/budget.json <<EOF
-{
-  "BudgetName": "mz-p2-monthly",
-  "BudgetLimit": {"Amount": "10", "Unit": "USD"},
-  "TimeUnit": "MONTHLY",
-  "BudgetType": "COST"
-}
-EOF
-
-cat > /tmp/notifications.json <<EOF
-[{
-  "Notification": {
-    "NotificationType": "ACTUAL",
-    "ComparisonOperator": "GREATER_THAN",
-    "Threshold": 80,
-    "ThresholdType": "PERCENTAGE"
-  },
-  "Subscribers": [{
-    "SubscriptionType": "EMAIL",
-    "Address": "$NOTIFY_EMAIL"
-  }]
-}]
-EOF
-
-aws budgets create-budget \
-  --account-id "$ACCOUNT_ID" \
-  --budget file:///tmp/budget.json \
-  --notifications-with-subscribers file:///tmp/notifications.json
-```
+The monthly budget alarm is provisioned by Terraform (`modules/finops`). To receive notifications, set `alert_email` in your gitignored `terraform.tfvars` before applying the data-platform stack; Terraform creates the SNS subscription and AWS sends a one-time confirmation link. No manual budget setup is needed.
 
 ---
 
@@ -112,7 +77,7 @@ Verify:
 
 ```bash
 ls -lh data/dataset.csv
-# Expect ~50 MB
+# Expect ~63 MB
 ```
 
 ---
@@ -164,7 +129,7 @@ This creates:
 - SSM parameters with bucket and path information
 - EMR cluster (release 7.13.0, Spark 3.5)
 - Security groups
-- The cluster will run its 4 steps and **auto-terminate**
+- The cluster will run its 2 steps and **auto-terminate**
 
 Expected runtime: 8-15 minutes from `apply` to cluster termination.
 
@@ -200,9 +165,9 @@ After cluster termination:
 BUCKET=$(aws ssm get-parameter --name /mz-p2/bucket_name --query 'Parameter.Value' --output text)
 
 # Featurized datasets (Parquet, partitioned by label)
-aws s3 ls s3://$BUCKET/dados/HTFfeaturizedData/   --recursive | head
-aws s3 ls s3://$BUCKET/dados/TFIDFfeaturizedData/ --recursive | head
-aws s3 ls s3://$BUCKET/dados/W2VfeaturizedData/   --recursive | head
++aws s3 ls s3://$BUCKET/data/HTFfeaturizedData/   --recursive | head
++aws s3 ls s3://$BUCKET/data/TFIDFfeaturizedData/ --recursive | head
++aws s3 ls s3://$BUCKET/data/W2VfeaturizedData/   --recursive | head
 
 # Trained models
 aws s3 ls s3://$BUCKET/output/ --recursive
@@ -245,7 +210,7 @@ docker compose exec mz-p2 bash
 make deploy
 ```
 
-The container has Terraform 1.14.9, AWS CLI v2, and Python pre-installed. AWS credentials are read from `~/.aws/` on the host (mounted into the container) - they are never baked into the image.
+The container has Terraform 1.15.5, AWS CLI v2, and Python pre-installed. AWS credentials are read from `~/.aws/` on the host (mounted into the container) - they are never baked into the image.
 
 ---
 
@@ -257,7 +222,7 @@ The SSM parameters are created by the s3 module of the data-platform stack. If t
 
 ### `BOOTSTRAP_FAILURE` on the cluster
 
-The EMR bootstrap script (`scripts/bootstrap.sh`) failed on at least one node. Inspect:
+The EMR bootstrap script (`scripts/bootstrap_emr.sh`) failed on at least one node. Inspect:
 
 ```bash
 aws s3 ls s3://$BUCKET/logs/$CLUSTER_ID/node/

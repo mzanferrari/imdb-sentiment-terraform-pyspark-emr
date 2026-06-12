@@ -27,6 +27,7 @@ configuration lets VS Code open the project directly inside the container, insta
 - Tool versions are pinned and verified against upstream, not memory: pinning an outdated version (for example an older uv with known advisories) is avoided by checking the source before fixing a version.
 - The slim base over a from-scratch Ubuntu build trades some learning value for a smaller, simpler image - proportionate to the goal of a reproducible environment rather than a hand-built one.
 - The image is dev and IaC only; EMR runs its own AMI in production. This container is not a production artifact.
+- OS security patches are applied at build time via `apt-get upgrade`. This trades bit-for-bit determinism (the base tag is mobile) for fresher CVE fixes - an acceptable trade-off for a dev image. Digest-pinning the base is noted as a future option if this image ever becomes a production base.
 
 ## Revisit when
 

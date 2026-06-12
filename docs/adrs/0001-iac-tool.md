@@ -18,7 +18,7 @@ Candidates considered: Terraform, AWS CDK, Pulumi, CloudFormation, Crossplane.
 
 ## Decision
 
-Use **Terraform 1.14+** with the AWS provider 6.x.
+Use **Terraform 1.15+** with the AWS provider 6.x.
 
 State stored remotely in S3 with native lockfile (Terraform 1.10+ feature, no DynamoDB lock table needed).
 
@@ -41,7 +41,7 @@ Terraform is the most widely-listed IaC tool in EU Data Engineering job descript
 
 - HCL is a custom DSL; team members fluent in Python/TypeScript only must learn it.
 - Less expressive than Pulumi for complex programmatic infra.
-- License is now BSL (Business Source License) post-IBM acquisition - not pure OSS but no impact for our use case.
+- License is BSL (Business Source License) since August 2023 - not pure OSS but no impact for our use case.
 
 **Mitigations:**
 

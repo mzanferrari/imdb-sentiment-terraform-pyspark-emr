@@ -6,7 +6,7 @@
 
 ## Context
 
-The pipeline runs sporadically: a portfolio demo executes ~10 times/month, each run ~15 minutes of Spark work over ~50 MB of input. The previous configuration (m5.4xlarge master + 2× m5.2xlarge core, all On-Demand) cost ~$1.92/h and was massively oversized.
+The pipeline runs sporadically: a portfolio demo executes ~10 times/month, each run ~15 minutes of Spark work over ~63 MB of input. The previous configuration (m5.4xlarge master + 2× m5.2xlarge core, all On-Demand) cost ~$1.92/h and was massively oversized.
 
 Three EMR deployment modes considered:
 
