@@ -7,6 +7,10 @@ at runtime so the same code runs unchanged across dev, staging, and prod account
 Entry point: pipeline.main
 """
 
-from importlib.metadata import version
+from importlib.metadata import PackageNotFoundError, version
 
-__version__ = version("imdb-sentiment-terraform-pyspark-emr")
+try:
+    __version__ = version("imdb-sentiment-terraform-pyspark-emr")
+except PackageNotFoundError:
+    # Running from pipeline.zip on EMR - no dist metadata in the zip.
+    __version__ = "0.0.0+unpackaged"
