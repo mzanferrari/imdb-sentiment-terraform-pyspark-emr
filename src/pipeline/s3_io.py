@@ -6,13 +6,14 @@ overwritten cleanly. Spark's `mode("overwrite")` handles atomicity on its own.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from pipeline.logging_setup import get_logger
 
 if TYPE_CHECKING:
     from pyspark.ml.base import Model
     from pyspark.ml.tuning import CrossValidatorModel
+    from pyspark.ml.util import MLWritable
     from pyspark.sql import DataFrame
 
     from pipeline.config import PipelineConfig
@@ -82,4 +83,4 @@ def write_model_to_s3(
     )
 
     log.info("writing model", extra={"model_label": model_label, "path": target_path})
-    model.write().overwrite().save(target_path)
+    cast("MLWritable", model).write().overwrite().save(target_path)
