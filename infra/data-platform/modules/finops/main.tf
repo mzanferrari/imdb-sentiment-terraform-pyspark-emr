@@ -22,8 +22,9 @@ terraform {
 # ─── SNS TOPIC AND EMAIL SUBSCRIPTION ────────────────────────────────────────
 
 resource "aws_sns_topic" "cost_alerts" {
-  name = "${var.project_name}-cost-alerts"
-  tags = var.common_tags
+  name              = "${var.project_name}-cost-alerts"
+  kms_master_key_id = "alias/aws/sns"
+  tags              = var.common_tags
 }
 
 # Optional email subscription. Created only when alert_email is non-empty, so

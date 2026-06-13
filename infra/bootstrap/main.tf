@@ -73,7 +73,7 @@ resource "local_file" "backend_conf" {
   content = <<-EOT
     region = "${aws_s3_bucket.terraform_state.region}"
     bucket = "${aws_s3_bucket.terraform_state.id}"
-    key    = "${var.project_name}-key.tfstate"
+    key    = "data-platform.tfstate"
   EOT
 
   depends_on = [aws_s3_bucket.terraform_state]

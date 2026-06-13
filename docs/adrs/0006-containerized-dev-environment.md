@@ -27,6 +27,15 @@ configuration lets VS Code open the project directly inside the container, insta
 - Tool versions are pinned and verified against upstream, not memory: pinning an outdated version (for example an older uv with known advisories) is avoided by checking the source before fixing a version.
 - The slim base over a from-scratch Ubuntu build trades some learning value for a smaller, simpler image - proportionate to the goal of a reproducible environment rather than a hand-built one.
 - The image is dev and IaC only; EMR runs its own AMI in production. This container is not a production artifact.
+- OS security patches are applied at build time via `apt-get upgrade`. This trades bit-for-bit determinism (the base tag is mobile) for fresher CVE fixes - an acceptable trade-off for a dev image. Digest-pinning the base is noted as a future option if this image ever becomes a production base.
+
+## Container image vulnerability scanning
+
+The Trivy container scan in the security workflow runs but does not block merge (exit-code 0). This is deliberate and follows from the dev-image decision above.
+
+The image bundles third-party developer tooling (terraform, tflint, the AWS CLI, and Python build tools). Some of these carry HIGH CVEs whose only fix is an upstream rebuild we do not control: terraform and tflint share a Go stdlib advisory (CVE-2026-42504) resolved only when HashiCorp and the tflint project recompile, and setuptools vendors libraries patched on their own release cadence. Python build tooling that we do control (wheel, setuptools) is upgraded in the Dockerfile to pick up available fixes.
+
+Blocking merge on CVEs in third-party dev tooling, in an image that never reaches production (EMR runs its own AMI), would be disproportionate: it would gate the project on releases outside our control while adding no real security value, since the image runs locally with no exposure to untrusted traffic. The scan still runs on every push and uploads results to the Security tab, so the findings stay visible and are reviewed periodically. The filesystem and IaC scans, which cover our own code and infrastructure, remain blocking.
 
 ## Revisit when
 

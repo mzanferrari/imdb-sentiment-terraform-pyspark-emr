@@ -5,7 +5,7 @@ correct checksum is already present at the target path, the script does nothing.
 
 Why this exists
 ---------------
-The training dataset is too large for git (~50 MB CSV). Storing it in the repo
+The training dataset is too large for git (~63 MB CSV). Storing it in the repo
 would bloat clones, conflict with `.gitignore` hygiene, and tie the project to
 a specific snapshot of the data. The convention in modern Data Engineering
 portfolios is: code is versioned, data is fetched at runtime from a documented
@@ -45,10 +45,7 @@ DEFAULT_SOURCE_URL: Final[str] = (
 # If the upstream file changes, recompute with:
 #     sha256sum data/dataset.csv
 # This must be updated together with any URL change, in the same commit.
-EXPECTED_SHA256: Final[str] = "c5d5d6c2bbeed3e9dbfa0db4c5fa05d6e0a17e3f49b4e3e87a7e09b04f3e0d3f"
-# NOTE: The hash above is a placeholder. After your first successful download,
-# run `sha256sum data/dataset.csv` and replace EXPECTED_SHA256 with the result.
-# Then commit. From that point on, the script enforces integrity.
+EXPECTED_SHA256: Final[str] = "dfc447764f82be365fa9c2beef4e8df89d3919e3da95f5088004797d79695aa2"
 
 DEFAULT_OUTPUT_DIR: Final[Path] = Path("data")
 DEFAULT_FILENAME: Final[str] = "dataset.csv"

@@ -164,14 +164,14 @@ resource "aws_iam_user_policy" "terraform_state_access" {
         Effect = "Allow"
         Action = ["s3:GetObject", "s3:PutObject"]
         Resource = [
-          "arn:aws:s3:::${var.project_name}-terraform-${var.project_id}/${var.project_name}-key.tfstate",
+          "arn:aws:s3:::${var.project_name}-terraform-${var.project_id}/data-platform.tfstate",
         ]
       },
       {
         Effect = "Allow"
         Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
         Resource = [
-          "arn:aws:s3:::${var.project_name}-terraform-${var.project_id}/${var.project_name}-key.tflock",
+          "arn:aws:s3:::${var.project_name}-terraform-${var.project_id}/data-platform.tfstate.tflock",
         ]
       },
     ]

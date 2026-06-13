@@ -52,13 +52,20 @@ LABEL org.opencontainers.image.title="imdb-sentiment-dev" \
 # openjdk-17-jre-headless - required by the Spark engine bundled in pyspark
 # jq                      - used by the terraform_validate pre-commit hook
 # git, ca-certificates    - baseline dev + TLS
+#
+# apt-get upgrade applies OS security patches over the base image. This trades
+# bit-for-bit build determinism (the base tag is mobile) for fresher CVE fixes.
+# Acceptable here: this is a dev/IaC image, not a production artifact (ADR-0006).
+# apt-get clean + rm lists keeps the layer small.
 # hadolint ignore=DL3008,DL3009
 RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
     apt-get install -y --no-install-recommends \
         ca-certificates \
         git \
         jq \
         openjdk-17-jre-headless && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 # Binaries from the download stage
@@ -67,36 +74,19 @@ COPY --from=downloads /downloads/tflint /usr/local/bin/tflint
 COPY --from=downloads /downloads/aws /tmp/aws-cli/aws
 RUN /tmp/aws-cli/aws/install && rm -rf /tmp/aws-cli
 
-# ─── STAGE 2 - RUNTIME IMAGE ──────────────────────────────────────────────────
-FROM python:3.11-slim-bookworm
-
-LABEL org.opencontainers.image.title="imdb-sentiment-dev" \
-      org.opencontainers.image.description="Dev container: PySpark tests, Terraform, lint gate" \
-      org.opencontainers.image.licenses="MIT"
-
-# openjdk-17-jre-headless - required by the Spark engine bundled in pyspark
-# jq                      - used by the terraform_validate pre-commit hook
-# git, ca-certificates    - baseline dev + TLS
-# hadolint ignore=DL3008,DL3009
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        ca-certificates \
-        git \
-        jq \
-        openjdk-17-jre-headless && \
-    rm -rf /var/lib/apt/lists/*
-
-# Binaries from the download stage
-COPY --from=downloads /downloads/terraform /usr/local/bin/terraform
-COPY --from=downloads /downloads/tflint /usr/local/bin/tflint
-COPY --from=downloads /downloads/aws /tmp/aws-cli/aws
-RUN /tmp/aws-cli/aws/install && rm -rf /tmp/aws-cli
-
-# ─── PYTHON TOOLING - UV AND CHECKOV ──────────────────────────────────────────
+# ─── PYTHON TOOLING - UV AND BUILD-TOOL SECURITY PATCHES ──────────────────────
 # uv: package manager used to install project deps (via devcontainer postCreate).
-# checkov: IaC security scan, installed as an isolated tool to keep it out of
-# the project venv (lesson from phase 1, where it bloated the venv by ~500MB).
-RUN pip install --no-cache-dir uv==0.11.19
+# pip/setuptools/wheel are upgraded over the base image to patch known HIGH CVEs:
+# - wheel 0.46.2+        CVE-2026-24049 (path traversal in wheel unpack)
+# - setuptools 80+       vendors patched jaraco.context 6.1.0 (CVE-2026-23949)
+# Versions pinned for reproducibility; bump deliberately when upstream advisories
+# require it. terraform/tflint carry a Go stdlib CVE (CVE-2026-42504) fixable
+# only by an upstream rebuild; tracked as a maintenance item, not patchable here.
+RUN pip install --no-cache-dir \
+        "pip==26.1.2" \
+        "setuptools==82.0.1" \
+        "wheel==0.47.0" \
+        "uv==0.11.19"
 
 # ─── NON-ROOT USER ────────────────────────────────────────────────────────────
 # Workloads never run as root by default. UID/GID 1000 matches the typical

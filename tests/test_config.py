@@ -29,7 +29,7 @@ class TestPipelineConfig:
             bucket_name="mz-p2-123456789012",
             project_name="mz-p2",
             region="eu-west-1",
-            path_raw_data="s3://mz-p2-123456789012/dados/",
+            path_raw_data="s3://mz-p2-123456789012/data/",
             path_output="s3://mz-p2-123456789012/output/",
             path_logs="s3://mz-p2-123456789012/logs/",
             is_emr=True,

@@ -1,6 +1,0 @@
-# Backend configuration for: terraform init -backend-config=scripts/backend.conf
-# Copy this to backend.conf (gitignored) and fill in your real state bucket.
-# The state bucket is created by the bootstrap stack (infra/bootstrap).
-bucket = "your-tf-state-bucket"
-key    = "imdb-sentiment/data-platform.tfstate"
-region = "eu-west-1"

@@ -4,7 +4,7 @@
 
 <!-- Badges - enable after CI is configured and first push is done -->
 [![CI](https://github.com/mzanferrari/imdb-sentiment-terraform-pyspark-emr/actions/workflows/ci.yml/badge.svg)](https://github.com/mzanferrari/imdb-sentiment-terraform-pyspark-emr/actions/workflows/ci.yml)
-[![Terraform](https://img.shields.io/badge/Terraform-1.14+-7B42BC?logo=terraform)](https://www.terraform.io/)
+[![Terraform](https://img.shields.io/badge/Terraform-1.15+-7B42BC?logo=terraform)](https://www.terraform.io/)
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![AWS](https://img.shields.io/badge/AWS-EMR%207.13-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/emr/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -32,9 +32,9 @@
 
 ## About
 
-**Problem.** Train a binary sentiment classifier (positive/negative) on the IMDB movie reviews dataset (~50k reviews, ~50 MB CSV) using a distributed compute engine, with the entire infrastructure declared as code.
+**Problem.** Train a binary sentiment classifier (positive/negative) on the IMDB movie reviews dataset (~50k reviews, ~63 MB CSV) using a distributed compute engine, with the entire infrastructure declared as code.
 
-**Why this scope.** The dataset is small enough to run on a laptop with DuckDB or pandas. Using Spark + EMR for 50 MB is, on its own, **over-engineering** - and this project owns that explicitly. The point isn't to need Spark; the point is to demonstrate the full ladder of skills a Data Engineer is expected to operate end-to-end: IaC, cloud identity, distributed compute, ML feature engineering, observability, and FinOps reasoning.
+**Why this scope.** The dataset is small enough to run on a laptop with DuckDB or pandas. Using Spark + EMR for 63 MB is, on its own, **over-engineering** - and this project owns that explicitly. The point isn't to need Spark; the point is to demonstrate the full ladder of skills a Data Engineer is expected to operate end-to-end: IaC, cloud identity, distributed compute, ML feature engineering, observability, and FinOps reasoning.
 
 **Why this is not "just another DSA course project".** Beyond the original scope, this repo adds: Architecture Decision Records, GitHub Actions CI with security scanning, automated data ingestion, FinOps-aware cluster sizing with EMR Serverless option, GDPR-aware design notes, and a roadmap connecting the same pipeline architecture to international trade data (UN Comtrade) for a domain transfer narrative.
 
@@ -85,7 +85,7 @@ flowchart LR
 
 | Layer | Tool | Why |
 |---|---|---|
-| **IaC** | Terraform 1.14+ | Industry standard, modular, native S3 state locking (1.10+). Pulumi/CDK considered - see ADR-001. |
+| **IaC** | Terraform 1.15+ | Industry standard, modular, native S3 state locking (1.10+). Pulumi/CDK considered - see ADR-001. |
 | **Cloud** | AWS (eu-west-1) | EU region for data residency narrative. See ADR-002. |
 | **Compute** | Amazon EMR 7.13.0 (Spark 3.5) | Managed Spark cluster. Serverless variant available - see ADR-003. |
 | **Storage** | Amazon S3 + Parquet | Object storage with lifecycle policies; columnar format for analytical reads. |
@@ -115,10 +115,12 @@ flowchart LR
 │       └── modules/
 │           ├── s3/                     # Storage + SSM parameters
 │           ├── iam/                    # Service & instance roles
-│           └── emr/                    # Cluster + security groups
+│           ├── emr/                    # Cluster + security groups
+│           └── finops/                 # Budget + SNS cost alerts
 ├── src/
 │   └── pipeline/                       # Spark application code
-│       ├── main.py                     # Entry point (was projeto2.py)
+│       ├── main.py                     # Entry point
+│       ├── config.py                   # SSM Parameter Store reader
 │       ├── logging_setup.py            # Structured JSON logger
 │       ├── processing.py               # Feature engineering
 │       ├── ml.py                       # Model training & evaluation
@@ -140,12 +142,14 @@ flowchart LR
 │       ├── 0001-iac-tool.md
 │       ├── 0002-aws-region.md
 │       ├── 0003-emr-deployment-mode.md
-│       └── 0004-no-pii-no-pseudonymisation.md
+│       ├── 0004-no-pii-no-pseudonymisation.md
+│       ├── 0005-cost-guardrails.md
+│       └── 0006-containerized-dev-environment.md
 ├── data/                               # gitignored; populated by ingest_data.py
 ├── .github/
 │   └── workflows/
 │       ├── ci.yml                      # Lint + test + IaC validate on PR
-│       └── security.yml                # Scheduled trivy + trivy + gitleaks
+│       └── security.yml                # Scheduled trivy + gitleaks
 ├── .gitignore
 ├── .pre-commit-config.yaml
 ├── pyproject.toml                      # Python deps & tool config
@@ -153,8 +157,6 @@ flowchart LR
 ├── .devcontainer/
 │   └── devcontainer.json               # VS Code dev container config
 ├── .dockerignore
-├── Dockerfile
-├── docker-compose.yml
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile                            # Common commands
@@ -195,7 +197,7 @@ cp infra/data-platform/terraform.tfvars.example   infra/data-platform/terraform.
 ### 2. Download the dataset
 
 ```bash
-# Creates ./data/dataset.csv (~50 MB) if not present
+# Creates ./data/dataset.csv (~63 MB) if not present
 python scripts/ingest_data.py
 ```
 
@@ -297,7 +299,9 @@ make ci
 make lint              # ruff check + ruff format --check
 make typecheck         # mypy --strict src/
 make test              # pytest -v --cov=src tests/
-make iac-validate      # terraform fmt -check + tflint + trivy
+make iac-fmt-check     # terraform fmt -check (no rewrite)
+make iac-validate      # terraform validate on both stacks
+make iac-security      # trivy config scan
 ```
 
 Local pipeline run for an end-to-end smoke test (after `pip install -e .` or `uv sync`):
@@ -336,7 +340,7 @@ EXECUTION_ENV=local python -m pipeline.main <bucket-name> <project-name>
 
 ## Insights & Lessons Learned
 
-**On engineering for the right scale.** A 50 MB dataset doesn't need Spark. The exercise here is the **pattern**, not the throughput. A real DE decision is captured in ADR-003 - when EMR is justified vs when DuckDB on a single VM is the honest answer.
+**On engineering for the right scale.** A 63 MB dataset doesn't need Spark. The exercise here is the **pattern**, not the throughput. A real DE decision is captured in ADR-003 - when EMR is justified vs when DuckDB on a single VM is the honest answer.
 
 **On configuration via Parameter Store.** Pulling bucket names and paths from SSM at runtime (instead of injecting via Spark args or env vars set in Terraform) means the Python code is **infrastructure-agnostic**. The same `main.py` runs in dev, staging, and prod with no code changes - only the SSM tree changes.
 

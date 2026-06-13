@@ -36,7 +36,7 @@ flowchart TB
         direction TB
 
         subgraph BootStack [" Stack 1: bootstrap "]
-            StateBucket[(S3 Terraform State<br/>versioned + KMS-encrypted)]
+            StateBucket[(S3 Terraform State<br/>versioned + AES256-encrypted)]
         end
 
         subgraph PlatformStack [" Stack 2: data-platform "]
@@ -197,7 +197,7 @@ Three feature representations in parallel because the question "which featurizat
 | `iam_emr_profile_role` | `ec2.amazonaws.com` | `AmazonSSMManagedInstanceCore` (managed) + customer-managed inline policy (least-privilege: project bucket, SSM parameters, CloudWatch Logs) |
 | `terraform_user` (your IAM user) | n/a | Inline policy granting access to state bucket + lock object |
 
-Principle: **no long-lived AWS access keys** are used by workloads. The EMR cluster's EC2 instances assume their instance profile role via the EC2 metadata service. The pipeline code asks `boto3` for a client; boto3 reads `EC2_INSTANCE_METADATA` and gets short-lived STS credentials transparently. Zero secrets in code.
+Principle: **no long-lived AWS access keys** are used by workloads. The EMR cluster's EC2 instances assume their instance profile role via the EC2 metadata service. The pipeline code asks `boto3` for a client; boto3 obtains short-lived STS credentials from the EC2 instance metadata service (IMDS) transparently. Zero secrets in code.
 
 SSM access is granted through `AmazonSSMManagedInstanceCore`, which is also what enables interactive shell access to EMR core nodes via Session Manager (no SSH ports open - see security groups below).
 
@@ -273,7 +273,7 @@ Mitigations active:
 - Right-sized instances (m5.xlarge master, m5.large cores)
 - Spot for core nodes (~70% discount, interruption-tolerant for stateless map work)
 - `auto_termination_policy` with 10-minute idle timeout
-- `force_destroy = true` (parametrized) on the project bucket to make teardown one command
+- `force_destroy` (parametrized, default false) on the project bucket; set true only for throwaway teardown
 - Budget alarm + idle-cluster CloudWatch alarm (modules/finops + emr IsIdle)
 
 Mitigations planned (H2):
@@ -291,7 +291,7 @@ Today:
 - **Application JSON logs** emitted to stdout, captured by EMR's standard log capture.
 - **Correlation ID** generated per pipeline run, included in every log line.
 
-Future (H3):
+Future (Phase 4):
 
 - Forward logs to CloudWatch Logs via OpenTelemetry Collector running as bootstrap script.
 - Spark metrics (executor utilization, shuffle bytes, GC time) scraped via Prometheus pushgateway.

@@ -1,0 +1,23 @@
+# Trivy misconfiguration suppressions (infra/)
+#
+# Inline #trivy:ignore: comments do not work when a resource is evaluated
+# through a module call (trivy issue 6941), which is the case for every finding
+# here. This file is the reliable mechanism. Each ID below is a conscious,
+# documented decision, not an oversight.
+
+# ─── TRIVY IGNORE ─────────────────────────────────────────────────────────────
+
+# AWS-0132: S3 buckets use AES256 (SSE-S3), not a customer-managed KMS key.
+# Deliberate for a portfolio with no sensitive data; SSE-KMS/CMK is documented
+# as the PII-path upgrade in docs/adrs/0004.
+AVD-AWS-0132
+
+# AWS-0104: EMR security groups allow unrestricted egress. EMR needs outbound to
+# S3, ECR, the EMR Steps API and bootstrap package mirrors; AWS service ranges
+# are not statically pinnable. Documented in docs/ARCHITECTURE.md.
+AVD-AWS-0104
+
+# AWS-0136: SNS cost-alerts topic is encrypted with the AWS-managed key
+# (alias/aws/sns). A customer-managed CMK is disproportionate for non-sensitive
+# cost notifications; CMK is the upgrade path if alerts ever carry sensitive data.
+AVD-AWS-0136

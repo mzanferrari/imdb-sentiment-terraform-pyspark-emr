@@ -8,10 +8,13 @@ Living document tracking the project's evolution. Updated with each meaningful c
 
 Hardening the original course-derived project into a production-grade portfolio piece. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full plan.
 
+Phase mapping: H1 = ROADMAP Phase 1; H2 = Phases 2-3; H3 = Phase 4.
+
 ---
 
 ## Recent milestones
 
+- `2026-06-10` - **Pre-publication audit pass**: fixed ingestion SHA256 gate, EMR `pipeline.zip` import crash, Terraform state key/lock path and backend single-sourcing; aligned Terraform version to 1.15.5 across CI/docs; deduplicated Dockerfile stage and added OS security upgrade; translated residual PT-BR and renamed the raw-data S3 prefix to `data/`; reconciled README, DEPLOYMENT, ADRs, ROADMAP, ARCHITECTURE with the code on disk.
 - `2026-06-09` - **Phase 1 close - containerized dev environment**: multi-stage Dockerfile (Python 3.11, Java 17, Terraform 1.15.5, tflint 0.63.1, AWS CLI, jq, uv 0.11.19, checkov), docker-compose with isolated venv volume, devcontainer with postCreate. Full test suite passes inside the container (pytest + Spark). Terraform `required_version` pinned to `~> 1.15` across all modules; submodule lock files removed from tracking.
 - `2026-06-05` - **Audit V3-V5 + Phase 0/1 execution**: fixed the `pipeline.zip` upload gap (build artifact never reached EMR); IAM least-privilege policy; EMR Python 3.11 bootstrap; FinOps guardrails in Terraform (budget + idle alarm); `ml.py` and `s3_io.py` unit tests (coverage ~48%); local environment hardening (numpy, Python pin, Java, ruff bump). Internal audit docs gitignored via glob.
 - `2026-05-20` - **Audit V2 hardening pass**: 4 runtime-breaking bugs corrected (EMR step syntax, missing pipeline.zip, LoggerAdapter sentinel capture, PT-BR SSM parameter name); 12 high-severity issues resolved (project_name decoupled from bucket parsing, CrossValidatorModel type, explicit CSV schema, etc.); language-hygiene hook added; `tfsec` migrated to `trivy`/`checkov`.
@@ -51,7 +54,7 @@ Hardening the original course-derived project into a production-grade portfolio 
 - [x] Add `auto_termination_policy { idle_timeout = 600 }`
 - [x] Apply `common_tags` to all resources
 - [x] Parametrize `force_destroy` (default `false`)
-- [ ] Harden `block_public_policy = true` with explicit bucket policy for EMR
+- [x] Harden `block_public_policy = true` with explicit bucket policy for EMR
 
 ### Documentation
 

@@ -15,7 +15,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12",
     "Topic :: Scientific/Engineering :: Information Analysis",
 ]
 
@@ -47,7 +46,7 @@ dev = [
     "pytest-mock>=3.12",
     # Pre-commit
     "pre-commit>=3.7",
-    # Data quality (opcional, futuro)
+    # Data quality (optional, future)
     # "great-expectations>=0.18",
 ]
 
@@ -73,13 +72,13 @@ build-backend = "hatchling.build"
 packages = ["src/pipeline"]
 
 # =====================================================================
-# uv - Python package manager moderno (recomendado)
+# uv - modern Python package manager (recommended)
 # =====================================================================
 [tool.uv]
 # Lock file is generated as uv.lock; commit it for reproducible builds.
 
 # =====================================================================
-# Ruff - linter + formatter (substitui black + isort + flake8 + pyupgrade)
+# Ruff - linter + formatter (replaces black + isort + flake8 + pyupgrade)
 # =====================================================================
 [tool.ruff]
 line-length = 100

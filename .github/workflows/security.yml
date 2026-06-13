@@ -13,7 +13,7 @@ on:
 
 permissions:
   contents: read
-  security-events: write   # Para subir SARIF no Security tab
+  security-events: write   # Upload SARIF to the Security tab
 
 jobs:
   # ===================================================================
@@ -52,13 +52,18 @@ jobs:
         run: docker build -t mz-p2:scan -f Dockerfile .
 
       - name: Trivy scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: mz-p2:scan
           format: sarif
           output: trivy-results.sarif
           severity: CRITICAL,HIGH
-          exit-code: "1"
+          # Non-blocking: this is a dev image, not a production artifact
+          # (ADR-0006). Remaining HIGH CVEs are in third-party tooling
+          # (terraform, tflint, vendored setuptools libs) awaiting upstream
+          # rebuilds. The scan still runs and uploads to the Security tab for
+          # visibility; it is reviewed periodically, not used to block merge.
+          exit-code: "0"
           ignore-unfixed: true
 
       - name: Upload Trivy results to Security tab
@@ -77,7 +82,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Trivy fs scan
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: fs
           scan-ref: .
