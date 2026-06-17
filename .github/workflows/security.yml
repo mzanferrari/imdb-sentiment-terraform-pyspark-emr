@@ -16,9 +16,7 @@ permissions:
   security-events: write   # Upload SARIF to the Security tab
 
 jobs:
-  # ===================================================================
-  # Dependency vulnerabilities (Python)
-  # ===================================================================
+# ─── DEPENDENCY VULNERABILITIES (PYTHON) ──────────────────────────────────────
   python-deps:
     name: Python dependency scan
     runs-on: ubuntu-latest
@@ -39,9 +37,7 @@ jobs:
           uv pip install pip-audit
           uv run pip-audit --strict || echo "Vulnerabilities found - see logs"
 
-  # ===================================================================
-  # Container image scan (Trivy)
-  # ===================================================================
+# ─── CONTAINER IMAGE SCAN (TRIVY) ─────────────────────────────────────────────
   container-scan:
     name: Container image scan (Trivy)
     runs-on: ubuntu-latest
@@ -72,9 +68,8 @@ jobs:
         with:
           sarif_file: trivy-results.sarif
 
-  # ===================================================================
-  # Filesystem scan (catches secrets and misconfigurations in IaC)
-  # ===================================================================
+# ─── FILESYSTEM SCAN ──────────────────────────────────────────────────────────
+# Catches secrets and misconfigurations in IaC.
   fs-scan:
     name: Filesystem & IaC scan (Trivy)
     runs-on: ubuntu-latest
@@ -96,9 +91,7 @@ jobs:
         with:
           sarif_file: trivy-fs-results.sarif
 
-  # ===================================================================
-  # Bandit - Python SAST (Static Application Security Testing)
-  # ===================================================================
+# ─── BANDIT - PYTHON SAST ─────────────────────────────────────────────────────
   python-sast:
     name: Python SAST (Bandit)
     runs-on: ubuntu-latest
