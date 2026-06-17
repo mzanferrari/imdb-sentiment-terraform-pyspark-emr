@@ -23,7 +23,7 @@ resource "aws_s3_bucket" "create_bucket" {
 
   tags = merge(var.common_tags, {
     Name    = "${var.project_name}-app-bucket"
-    Purpose = "Pipeline scripts, raw data, ML outputs, logs"
+    Purpose = "Pipeline scripts - raw data - ML outputs - logs"
   })
 }
 
