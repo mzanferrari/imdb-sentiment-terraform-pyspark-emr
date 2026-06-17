@@ -64,6 +64,7 @@ RUN apt-get update && \
         ca-certificates \
         git \
         jq \
+        make \
         openjdk-17-jre-headless && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*

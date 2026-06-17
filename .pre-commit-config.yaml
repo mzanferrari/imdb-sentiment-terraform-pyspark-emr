@@ -16,9 +16,7 @@ default_language_version:
 default_stages: [pre-commit]
 
 repos:
-  # =================================================================
-  # Generic: whitespace, EOL, large files, merge conflicts, secrets
-  # =================================================================
+# ─── GENERIC: WHITESPACE, EOL, LARGE FILES, MERGE CONFLICTS, SECRETS ──────────
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.6.0
     hooks:
@@ -42,17 +40,14 @@ repos:
       - id: no-commit-to-branch
         args: [--branch, main, --branch, master]
 
-  # =================================================================
-  # Secret scanning (catches AWS keys, API tokens, private keys)
-  # =================================================================
+# ─── SECRET SCANNING ──────────────────────────────────────────────────────────
+# Catches AWS keys, API tokens, private keys.
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.18.4
     hooks:
       - id: gitleaks
 
-  # =================================================================
-  # Python: ruff (lint + format), mypy (types)
-  # =================================================================
+# ─── PYTHON: RUFF (LINT + FORMAT), MYPY (TYPES) ───────────────────────────────
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.15.16
     hooks:
@@ -71,9 +66,7 @@ repos:
         args: [--config-file=pyproject.toml]
         files: ^(src|scripts)/.*\.py$
 
-  # =================================================================
-  # Terraform: fmt, validate, tflint, tfsec
-  # =================================================================
+# ─── TERRAFORM: FMT, VALIDATE, TFLINT, TRIVY ──────────────────────────────────
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.92.1
     hooks:
@@ -89,27 +82,21 @@ repos:
         args:
           - --args=--quiet --soft-fail
 
-  # =================================================================
-  # Shell scripts: shellcheck
-  # =================================================================
+# ─── SHELL SCRIPTS: SHELLCHECK ────────────────────────────────────────────────
   - repo: https://github.com/shellcheck-py/shellcheck-py
     rev: v0.10.0.1
     hooks:
       - id: shellcheck
         args: [--severity=warning]
 
-  # =================================================================
-  # Markdown
-  # =================================================================
+# ─── MARKDOWN ─────────────────────────────────────────────────────────────────
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.41.0
     hooks:
       - id: markdownlint
         args: [--config, .markdownlint.yaml, --ignore, node_modules, --fix]
 
-  # =================================================================
-  # Dockerfile
-  # =================================================================
+# ─── DOCKERFILE ───────────────────────────────────────────────────────────────
   - repo: https://github.com/hadolint/hadolint
     rev: v2.13.1-beta
     hooks:
@@ -118,9 +105,7 @@ repos:
         # DL3008: pin apt versions (often impractical for base images)
         # DL3009: delete apt lists after install (handled in our Dockerfile)
 
-  # =================================================================
-  # Commit message: conventional commits
-  # =================================================================
+# ─── COMMIT MESSAGE: CONVENTIONAL COMMITS ───────────────────────────────────
   - repo: https://github.com/compilerla/conventional-pre-commit
     rev: v3.4.0
     hooks:
@@ -128,17 +113,15 @@ repos:
         stages: [commit-msg]
         args: [feat, fix, docs, style, refactor, perf, test, chore, ci, build, revert]
 
-  # =================================================================
-  # Notebook hygiene (strip outputs before commit)
-  # =================================================================
+# ─── NOTEBOOK HYGIENE ─────────────────────────────────────────────────────────
+# Strip outputs before commit.
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:
       - id: nbstripout
 
-  # =================================================================
-  # Local: language hygiene (block PT-BR from leaking into public files)
-  # =================================================================
+# ─── LOCAL: LANGUAGE HYGIENE ──────────────────────────────────────────────────
+# Block PT-BR from leaking into public files.
   - repo: local
     hooks:
       - id: check-no-pt-br

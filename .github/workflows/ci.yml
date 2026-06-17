@@ -17,9 +17,7 @@ permissions:
   pull-requests: write # To post results on PRs
 
 jobs:
-  # ===================================================================
-  # Python: lint, format check, type check, tests
-  # ===================================================================
+# ─── PYTHON: LINT, FORMAT CHECK, TYPE CHECK, TESTS ────────────────────────────
   python:
     name: Python (ruff + mypy + pytest)
     runs-on: ubuntu-latest
@@ -63,9 +61,7 @@ jobs:
           fail_ci_if_error: false
         continue-on-error: true
 
-  # ===================================================================
-  # Terraform: format, validate
-  # ===================================================================
+# ─── TERRAFORM: FORMAT, VALIDATE ──────────────────────────────────────────────
   terraform:
     name: Terraform (fmt + validate)
     runs-on: ubuntu-latest
@@ -94,11 +90,9 @@ jobs:
         working-directory: infra/${{ matrix.stack }}
         run: terraform validate
 
-  # ===================================================================
-  # IaC security scan: tflint + tfsec
-  # ===================================================================
+# ─── IAC SECURITY: TFLINT + TRIVY ─────────────────────────────────────────────
   iac-security:
-    name: IaC security (tflint + tfsec)
+    name: IaC security (tflint + trivy)
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -128,9 +122,7 @@ jobs:
           exit-code: "1"
           ignore-unfixed: true
 
-  # ===================================================================
-  # Secret scanning
-  # ===================================================================
+# ─── SECRET SCANNING ──────────────────────────────────────────────────────────
   secrets:
     name: Secret scan (gitleaks)
     runs-on: ubuntu-latest
@@ -146,9 +138,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  # ===================================================================
-  # Markdown linting (catches broken links and bad formatting in docs)
-  # ===================================================================
+# ─── MARKDOWN LINTING ─────────────────────────────────────────────────────────
+# Catches broken links and bad formatting in docs.
   docs:
     name: Markdown lint
     runs-on: ubuntu-latest
@@ -166,9 +157,8 @@ jobs:
             !.terraform/**
             !data/**
 
-  # ===================================================================
-  # Aggregate status - useful for branch protection rules
-  # ===================================================================
+# ─── AGGREGATE STATUS ─────────────────────────────────────────────────────────
+# Single required check, useful for branch protection rules.
   ci-success:
     name: CI Success
     needs: [python, terraform, iac-security, secrets, docs]

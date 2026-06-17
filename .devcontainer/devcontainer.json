@@ -3,7 +3,7 @@
   "dockerComposeFile": "../docker-compose.yml",
   "service": "mz-p2",
   "workspaceFolder": "/workspace",
-  "postCreateCommand": "uv venv --python 3.11 && uv pip install -e '.[dev]' && pre-commit install",
+  "postCreateCommand": "uv venv --python 3.11 && uv pip install -e '.[dev]' && uv run pre-commit install",
   "customizations": {
     "vscode": {
       "extensions": [

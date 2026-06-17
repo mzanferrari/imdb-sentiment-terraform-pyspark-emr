@@ -22,6 +22,7 @@ Hardening, observability, and documentation.
 - [x] Unit tests for `ml.py` training helpers (CrossValidator setup, model persistence, `TrainResult` shape) - only pipeline module without dedicated coverage
 - [x] Containerized dev environment: multi-stage Dockerfile (Python 3.11, Java 17, Terraform 1.15, tooling), docker-compose with isolated venv, devcontainer for VS Code
 - [ ] Nightly CI workflow running the slow ML training suite (`pytest -m slow`), separated from PR CI to keep fast feedback
+- [ ] Network hardening for EMR: S3 gateway VPC endpoint (zero-cost, keeps S3 traffic in-VPC) and HTTPS-only egress to the internet. Interface endpoints (STS/SSM) deferred on cost grounds for a sporadic, auto-terminating cluster - to be recorded in an ADR
 
 ---
 
