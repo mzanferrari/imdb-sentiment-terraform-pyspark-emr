@@ -21,7 +21,8 @@ variable "project_id" {
 
 variable "terraform_user" {
   type        = string
-  description = "IAM username that runs Terraform (for state bucket access policy)"
+  description = "IAM username for legacy state-access policy. Empty for SSO (default); the permission set provides state access. See ADR 0007."
+  default     = ""
 }
 
 variable "versioning_bucket" {

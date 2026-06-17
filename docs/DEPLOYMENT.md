@@ -49,10 +49,10 @@ project_id        = "<YOUR_AWS_ACCOUNT_ID>"
 versioning_bucket = "Enabled"
 ```
 
-Additional field for data-platform:
+Additional field for data-platform (leave empty for SSO, the recommended path):
 
 ```hcl
-terraform_user = "<your-iam-username>"   # e.g., "terraform-deployer"
+terraform_user = ""   # SSO: leave empty. Legacy IAM-user auth: set your username.
 ```
 
 These `.tfvars` files are gitignored. They will **never** be committed. Keep them on your machine.

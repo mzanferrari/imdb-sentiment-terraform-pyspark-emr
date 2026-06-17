@@ -1,9 +1,10 @@
 # IAM roles and policies.
 #
-# Two service roles + one user policy:
+# Two service roles + one optional user policy:
 #   1. emr_service_role:  EMR control plane (provisioning the cluster)
 #   2. emr_profile_role:  EC2 instances inside the cluster (Spark workers)
-#   3. terraform user policy: lets your IAM user read/write the state bucket
+#   3. terraform user policy (optional): state-bucket access for legacy
+#      IAM-user auth; skipped under SSO, where the permission set grants it
 #
 # Principle: no long-lived AWS access keys anywhere. Workloads assume their
 # instance profile via the EC2 metadata service.
@@ -142,13 +143,16 @@ resource "aws_iam_instance_profile" "emr_profile" {
   tags = var.common_tags
 }
 
-# ─── TERRAFORM USER POLICY ────────────────────────────────────────────────────
-# Grants your IAM user access to the remote state bucket.
+# ─── TERRAFORM USER POLICY (LEGACY IAM-USER AUTH ONLY) ────────────────────────
+# Grants an IAM user access to the remote state bucket.
 #
-# This is attached to your existing IAM user (var.terraform_user). It allows
-# read/write on the state file plus the native S3 lockfile.
+# Created only when var.terraform_user is set (legacy IAM-user workflow). Under
+# the default SSO path (terraform_user = ""), this is skipped and state access
+# comes from the permission set the assumed role already carries. See ADR 0007.
 
 resource "aws_iam_user_policy" "terraform_state_access" {
+  count = var.terraform_user != "" ? 1 : 0
+
   name = "${var.project_name}-terraform-state-access"
   user = var.terraform_user
 

@@ -195,7 +195,7 @@ Three feature representations in parallel because the question "which featurizat
 |---|---|---|
 | `iam_emr_service_role` | `elasticmapreduce.amazonaws.com` | `AmazonEMRServicePolicy_v2` (managed) |
 | `iam_emr_profile_role` | `ec2.amazonaws.com` | `AmazonSSMManagedInstanceCore` (managed) + customer-managed inline policy (least-privilege: project bucket, SSM parameters, CloudWatch Logs) |
-| `terraform_user` (your IAM user) | n/a | Inline policy granting access to state bucket + lock object |
+| `terraform_user` (legacy IAM-user auth only; empty under SSO) | n/a | Optional inline policy for state-bucket access; skipped under SSO, where the permission set grants it (ADR 0007) |
 
 Principle: **no long-lived AWS access keys** are used by workloads. The EMR cluster's EC2 instances assume their instance profile role via the EC2 metadata service. The pipeline code asks `boto3` for a client; boto3 obtains short-lived STS credentials from the EC2 instance metadata service (IMDS) transparently. Zero secrets in code.
 
