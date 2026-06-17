@@ -144,7 +144,8 @@ flowchart LR
 │       ├── 0003-emr-deployment-mode.md
 │       ├── 0004-no-pii-no-pseudonymisation.md
 │       ├── 0005-cost-guardrails.md
-│       └── 0006-containerized-dev-environment.md
+│       ├── 0006-containerized-dev-environment.md
+│       └── 0007-sso-state-access.md
 ├── data/                               # gitignored; populated by ingest_data.py
 ├── .github/
 │   └── workflows/
@@ -170,7 +171,7 @@ flowchart LR
 | Requirement | Version | Notes |
 |---|---|---|
 | AWS account | - | Free tier is **not** sufficient; cluster will incur charges. Budget alarm recommended. |
-| AWS CLI | v2.15+ | Configured with credentials in `~/.aws/credentials` |
+| AWS CLI | v2.15+ | Configured via `aws configure sso` (recommended) or IAM-user credentials |
 | Terraform | 1.15+ | Required for native S3 state locking |
 | Docker | 24+ | Alternative to local installs |
 | Python | 3.11 | Local pipeline runs and ingestion. Not 3.12 - PySpark 3.5 needs `distutils` (removed in 3.12). |

@@ -10,9 +10,11 @@ project_name = "mz-p2"
 # Your AWS Account ID
 project_id = "<your-12-digit-aws-account-id>"
 
-# IAM username that runs Terraform. Used to attach the state-bucket access policy.
-# Find with: aws iam get-user --query 'User.UserName' --output text
-terraform_user = "<your-iam-username>"
+# State-bucket access. Leave empty when running under SSO (recommended): the
+# permission set already grants state access, so no IAM-user policy is needed.
+# Only set this if you authenticate as a legacy IAM user with access keys -
+# then use the username from: aws iam get-user --query 'User.UserName' --output text
+terraform_user = ""
 
 # Enable versioning on the project bucket
 versioning_bucket = "Enabled"
