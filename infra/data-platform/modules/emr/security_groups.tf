@@ -22,7 +22,8 @@ resource "aws_security_group" "main_security_group" {
   }
 
   tags = merge(var.common_tags, {
-    Name = "${var.project_name}-emr-main-sg"
+    Name                                       = "${var.project_name}-emr-main-sg"
+    "for-use-with-amazon-emr-managed-policies" = "true"
   })
 }
 
@@ -55,6 +56,7 @@ resource "aws_security_group" "core_security_group" {
   }
 
   tags = merge(var.common_tags, {
-    Name = "${var.project_name}-emr-core-sg"
+    Name                                       = "${var.project_name}-emr-core-sg"
+    "for-use-with-amazon-emr-managed-policies" = "true"
   })
 }

@@ -120,8 +120,12 @@ resource "aws_emr_cluster" "cluster" {
     }
   ])
 
+  # for-use-with-amazon-emr-managed-policies: required by AmazonEMRFullAccessPolicy_v2.
+  # The v2 managed policy is tag-scoped - RunJobFlow is denied without this tag. EMR
+  # propagates it to resources it creates; SGs we create ourselves carry it explicitly.
   tags = merge(var.common_tags, {
-    Name = "${var.project_name}-emr-cluster"
+    Name                                       = "${var.project_name}-emr-cluster"
+    "for-use-with-amazon-emr-managed-policies" = "true"
   })
 }
 
