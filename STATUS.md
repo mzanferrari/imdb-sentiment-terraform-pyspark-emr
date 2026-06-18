@@ -50,7 +50,7 @@ Phase mapping: H1 = ROADMAP Phase 1; H2 = Phases 2-3; H3 = Phase 4.
 ### Infrastructure
 
 - [x] Switch default region to `eu-west-1` (Ireland)
-- [x] Right-size cluster: master `m5.xlarge`, cores `m5.large` Spot
+- [x] Right-size cluster: master `m7g.xlarge`, cores `m7g.xlarge` Spot Graviton
 - [x] Add `auto_termination_policy { idle_timeout = 600 }`
 - [x] Apply `common_tags` to all resources
 - [x] Parametrize `force_destroy` (default `false`)

@@ -270,7 +270,7 @@ Cost categories incurred:
 
 Mitigations active:
 
-- Right-sized instances (m5.xlarge master, m5.large cores)
+- Right-sized Graviton instances (m7g.xlarge master and cores; ARM, ~11-19% cheaper than x86 equivalent)
 - Spot for core nodes (~70% discount, interruption-tolerant for stateless map work)
 - `auto_termination_policy` with 10-minute idle timeout
 - `force_destroy` (parametrized, default false) on the project bucket; set true only for throwaway teardown
