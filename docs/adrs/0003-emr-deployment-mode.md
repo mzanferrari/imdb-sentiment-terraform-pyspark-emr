@@ -1,7 +1,7 @@
 # ADR 0003 - EMR Deployment Mode: EC2 with Spot (current) -> Serverless (target)
 
-- **Status:** Accepted (current EC2), Planned migration to Serverless in H2
-- **Date:** 2026-05-19
+- **Status:** Accepted (current EC2 + Graviton), Planned migration to Serverless in H2
+- **Date:** 2026-05-19 (revised 2026-06-17: m5.large -> Graviton m7g.xlarge)
 - **Deciders:** mzanferrari
 
 ## Context
@@ -19,8 +19,8 @@ Three EMR deployment modes considered:
 **Current state (H1):** EMR on EC2 with right-sized On-Demand master + Spot core nodes.
 
 ```hcl
-master_instance_group { instance_type = "m5.xlarge" }
-core_instance_group   { instance_type = "m5.large"; instance_count = 2; bid_price = "0.05" }
+master_instance_group { instance_type = "m7g.xlarge" }
+core_instance_group   { instance_type = "m7g.xlarge"; instance_count = 1; bid_price = "0.1632" }
 auto_termination_policy { idle_timeout = 600 }
 ```
 
@@ -35,9 +35,17 @@ Per run (15 min Spark work + 5 min cluster startup, sporadic schedule):
 | Mode | Compute config | Cost/run | Notes |
 |---|---|---|---|
 | **EC2 On-Demand (original)** | m5.4xlarge + 2× m5.2xlarge | ~$0.50 | Cluster startup wastes ~5 min of full-capacity billing |
-| **EC2 right-sized + Spot** | m5.xlarge + 2× m5.large Spot | ~$0.17 | Spot interruption risk on core nodes |
+| **EC2 right-sized + Spot (Graviton)** | m7g.xlarge master + 1× m7g.xlarge Spot | ~$0.16 | ARM; ~11% cheaper Spot than x86 equivalent |
 | **EMR Serverless** | 4 workers × 4 vCPU × 16 GB on demand | ~$0.14 | No idle cluster, scales per-stage |
 | **EKS on Fargate** | Same workers | ~$0.15 | Plus EKS cluster fee - only justified if multi-tenant |
+
+### Instance family: the m5.large dead end, and Graviton
+
+The original right-sizing specified `m5.large` core nodes - the smallest m5 size, chosen to minimise cost. The real deployment revealed that EMR does not support `m5.large`: the minimum supported size in every modern family is `xlarge` (verified with `aws emr list-supported-instance-types --release-label emr-7.13.0`, which lists `m5.xlarge`, `m6i.xlarge`, `m7g.xlarge`, ... but no `*.large`).
+
+Since cost could not be reduced by going smaller, it was reduced by changing architecture: Graviton (ARM) `m7g.xlarge`. Measured on-account (eu-west-1, 2026-06-17): Spot `m7g.xlarge` ~$0.082/h vs `m5.xlarge` x86 ~$0.092/h (~11% cheaper on Spot); On-Demand $0.1632 vs `m7i.xlarge` $0.2016 (~19%). The bid price is set to the On-Demand price ($0.1632) as a ceiling - Spot is paid at the real ~$0.082, the ceiling only guarantees allocation through price spikes. Core count drops to 1: one xlarge (4 vCPU) is ample for 63 MB of input, sized to the data rather than padded.
+
+ARM compatibility was confirmed before migrating: numpy ships aarch64 wheels (pinned in uv.lock) and the bootstrap installs only pure-Python boto3.
 
 ### Beyond cost
 

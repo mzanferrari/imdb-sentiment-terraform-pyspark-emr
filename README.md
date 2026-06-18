@@ -262,17 +262,17 @@ The cluster terminates automatically after the last step completes (`keep_job_fl
 
 > All estimates in USD for `eu-west-1`, May 2026 pricing. Cross-reference with [AWS Pricing Calculator](https://calculator.aws/) before deployment.
 
-### Default config (EMR-on-EC2, right-sized)
+### Default config (EMR-on-EC2, right-sized, Graviton)
 
 | Resource | Spec | $/h | Run duration | Cost/run |
 |---|---|---|---|---|
-| Master | m5.xlarge (4 vCPU, 16 GB) On-Demand | ~$0.214 | ~30 min | ~$0.11 |
-| Core (×2) | m5.large (2 vCPU, 8 GB) Spot (~70% discount) | ~$0.066 ea | ~25 min | ~$0.06 |
+| Master | m7g.xlarge (4 vCPU, 16 GB, Graviton) On-Demand | ~$0.163 | ~30 min | ~$0.08 |
+| Core (×1) | m7g.xlarge (4 vCPU, 16 GB, Graviton) Spot | ~$0.082 | ~25 min | ~$0.03 |
 | S3 storage | ~100 MB at $0.023/GB-mo | - | per month | <$0.01/mo |
 | Data transfer | EU intra-region | $0 | - | $0 |
-| **Total per run** | | | | **~$0.17** |
+| **Total per run** | | | | **~$0.12** |
 
-10 runs/month for portfolio demos: **~$1.70/month**.
+10 runs/month for portfolio demos: **~$1.20/month**.
 
 ### EMR Serverless variant (recommended for sporadic workloads)
 

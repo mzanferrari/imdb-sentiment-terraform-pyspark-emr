@@ -93,20 +93,20 @@ variable "monthly_budget_usd" {
 # See docs/adrs/0003-emr-deployment-mode.md
 variable "emr_master_instance_type" {
   type        = string
-  description = "EC2 instance type for the EMR master node"
-  default     = "m5.xlarge"
+  description = "EC2 instance type for the EMR master node (Graviton/ARM; min xlarge - EMR rejects *.large)"
+  default     = "m7g.xlarge"
 }
 
 variable "emr_core_instance_type" {
   type        = string
-  description = "EC2 instance type for EMR core nodes"
-  default     = "m5.large"
+  description = "EC2 instance type for EMR core nodes (Graviton/ARM; min xlarge - EMR rejects *.large)"
+  default     = "m7g.xlarge"
 }
 
 variable "emr_core_instance_count" {
   type        = number
   description = "Number of EMR core nodes"
-  default     = 2
+  default     = 1
 
   validation {
     condition     = var.emr_core_instance_count >= 1
@@ -116,8 +116,8 @@ variable "emr_core_instance_count" {
 
 variable "emr_core_bid_price" {
   type        = string
-  description = "Spot bid price for core nodes (USD/h). Empty string = On-Demand."
-  default     = "0.05"
+  description = "Spot bid price for core nodes (USD/h). Empty string = On-Demand. Set to m7g.xlarge On-Demand as ceiling so Spot always allocates."
+  default     = "0.1632"
 }
 
 variable "emr_idle_timeout_seconds" {

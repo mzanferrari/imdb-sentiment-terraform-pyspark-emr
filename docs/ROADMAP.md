@@ -16,7 +16,7 @@ Hardening, observability, and documentation.
 - [x] CI: lint (ruff), type check (mypy), tests (pytest), IaC validate (terraform fmt + tflint + trivy), secret scan (gitleaks)
 - [x] Pre-commit hooks for the same suite
 - [x] Architecture Decision Records (6 published)
-- [x] Right-sized EMR cluster with Spot core nodes and auto-termination
+- [x] Right-sized EMR cluster with Spot Graviton core nodes and auto-termination
 - [x] EU region as default (`eu-west-1`)
 - [x] AWS Budget alarm and idle-cluster CloudWatch alarm via Terraform
 - [x] Unit tests for `ml.py` training helpers (CrossValidator setup, model persistence, `TrainResult` shape) - only pipeline module without dedicated coverage
