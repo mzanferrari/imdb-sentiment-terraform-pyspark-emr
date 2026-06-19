@@ -61,7 +61,7 @@ Phase mapping: H1 = ROADMAP Phase 1; H2 = Phases 2-3; H3 = Phase 4.
 - [x] Professional `README.md` with Mermaid architecture diagram
 - [x] `docs/ARCHITECTURE.md`
 - [x] `docs/DEPLOYMENT.md`
-- [x] 7 ADRs (`0001`-`0007`)
+- [x] 8 ADRs (`0001`-`0008`)
 - [x] `docs/ROADMAP.md` (phased plan)
 
 ### Automation & CI

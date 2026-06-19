@@ -145,7 +145,8 @@ flowchart LR
 │       ├── 0004-no-pii-no-pseudonymisation.md
 │       ├── 0005-cost-guardrails.md
 │       ├── 0006-containerized-dev-environment.md
-│       └── 0007-sso-state-access.md
+│       ├── 0007-sso-state-access.md
+│       └── 0008-emr-service-role-policy.md
 ├── data/                               # gitignored; populated by ingest_data.py
 ├── .github/
 │   └── workflows/

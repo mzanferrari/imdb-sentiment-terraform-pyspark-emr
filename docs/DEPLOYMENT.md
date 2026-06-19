@@ -11,6 +11,7 @@ Before running anything that touches AWS:
 - [ ] AWS account with billing alerts configured (see "Budget alarm" below)
 - [ ] AWS CLI configured (`aws configure` or `aws sso login`)
 - [ ] Verify region: `aws configure get region` (project default is `eu-west-1`)
+- [ ] EC2 Spot service-linked role exists (one-time per account): `aws iam create-service-linked-role --aws-service-name spot.amazonaws.com` (returns an "already exists" error if present - that is fine). The core nodes use Spot, which requires this account-level role.
 - [ ] Verify identity: `aws sts get-caller-identity`
 - [ ] IAM permissions for: `s3:*`, `ec2:*` (for EMR), `elasticmapreduce:*`, `iam:CreateRole` + `iam:PutRolePolicy`, `ssm:PutParameter` + `ssm:GetParameter`
 - [ ] Terraform 1.15+ installed (`terraform version`)
