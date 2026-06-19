@@ -40,9 +40,80 @@ resource "aws_iam_role" "iam_emr_service_role" {
   })
 }
 
-resource "aws_iam_role_policy_attachment" "emr_service_role_policy" {
-  role       = aws_iam_role.iam_emr_service_role.id
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEMRServicePolicy_v2"
+# Custom service-role policy instead of AmazonEMRServicePolicy_v2.
+# The v2 managed policy scopes ec2:RunInstances to subnets tagged
+# for-use-with-amazon-emr-managed-policies=true. This project runs in the
+# default VPC and does not manage subnets, so tagging the subnet is out of
+# scope. This policy grants the EC2 lifecycle actions EMR needs without the
+# tag condition. Cleanup actions are included so EMR can terminate and tidy
+# the cluster (per AWS docs, missing cleanup leaves billable orphans). See ADR 0008.
+resource "aws_iam_role_policy" "emr_service_role_policy" {
+  name = "${var.project_name}-emr-service-policy"
+  role = aws_iam_role.iam_emr_service_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "EC2ProvisionAndCleanup"
+        Effect = "Allow"
+        Action = [
+          "ec2:RunInstances",
+          "ec2:TerminateInstances",
+          "ec2:CreateNetworkInterface",
+          "ec2:DeleteNetworkInterface",
+          "ec2:CreateFleet",
+          "ec2:CreateLaunchTemplate",
+          "ec2:CreateLaunchTemplateVersion",
+          "ec2:DeleteLaunchTemplate",
+          "ec2:CreateTags",
+          "ec2:DeleteTags",
+          "ec2:AuthorizeSecurityGroupIngress",
+          "ec2:AuthorizeSecurityGroupEgress",
+          "ec2:RevokeSecurityGroupIngress",
+          "ec2:RevokeSecurityGroupEgress",
+          "ec2:CreateSecurityGroup",
+          "ec2:DeleteSecurityGroup",
+          "ec2:Describe*",
+          "ec2:RequestSpotInstances",
+          "ec2:CancelSpotInstanceRequests"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "EBSVolumes"
+        Effect = "Allow"
+        Action = [
+          "ec2:CreateVolume",
+          "ec2:DeleteVolume",
+          "ec2:AttachVolume",
+          "ec2:DetachVolume"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid    = "EMRDescribe"
+        Effect = "Allow"
+        Action = [
+          "elasticmapreduce:Describe*",
+          "elasticmapreduce:ListInstances",
+          "elasticmapreduce:ListInstanceGroups"
+        ]
+        Resource = "*"
+      },
+      {
+        Sid      = "PassInstanceProfileToEC2"
+        Effect   = "Allow"
+        Action   = "iam:PassRole"
+        Resource = aws_iam_role.iam_emr_profile_role.arn
+        Condition = {
+          StringEquals = {
+            "iam:PassedToService" = "ec2.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
 }
 
 # ─── EC2 INSTANCE PROFILE ROLE ────────────────────────────────────────────────
