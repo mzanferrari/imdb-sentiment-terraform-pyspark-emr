@@ -20,7 +20,7 @@ Three EMR deployment modes considered:
 
 ```hcl
 master_instance_group { instance_type = "m7g.xlarge" }
-core_instance_group   { instance_type = "m7g.xlarge"; instance_count = 1; bid_price = "0.1632" }
+core_instance_group   { instance_type = "m7g.xlarge"; instance_count = 1; bid_price = "0.164" }
 auto_termination_policy { idle_timeout = 600 }
 ```
 
@@ -43,7 +43,7 @@ Per run (15 min Spark work + 5 min cluster startup, sporadic schedule):
 
 The original right-sizing specified `m5.large` core nodes - the smallest m5 size, chosen to minimise cost. The real deployment revealed that EMR does not support `m5.large`: the minimum supported size in every modern family is `xlarge` (verified with `aws emr list-supported-instance-types --release-label emr-7.13.0`, which lists `m5.xlarge`, `m6i.xlarge`, `m7g.xlarge`, ... but no `*.large`).
 
-Since cost could not be reduced by going smaller, it was reduced by changing architecture: Graviton (ARM) `m7g.xlarge`. Measured on-account (eu-west-1, 2026-06-17): Spot `m7g.xlarge` ~$0.082/h vs `m5.xlarge` x86 ~$0.092/h (~11% cheaper on Spot); On-Demand $0.1632 vs `m7i.xlarge` $0.2016 (~19%). The bid price is set to the On-Demand price ($0.1632) as a ceiling - Spot is paid at the real ~$0.082, the ceiling only guarantees allocation through price spikes. Core count drops to 1: one xlarge (4 vCPU) is ample for 63 MB of input, sized to the data rather than padded.
+Since cost could not be reduced by going smaller, it was reduced by changing architecture: Graviton (ARM) `m7g.xlarge`. Measured on-account (eu-west-1, 2026-06-17): Spot `m7g.xlarge` ~$0.082/h vs `m5.xlarge` x86 ~$0.092/h (~11% cheaper on Spot); On-Demand $0.1632 vs `m7i.xlarge` $0.2016 (~19%). The bid price is set to $0.164 (the On-Demand price rounded up to EMR's 3-decimal limit) as a ceiling - Spot is paid at the real ~$0.082, the ceiling only guarantees allocation through price spikes. Core count drops to 1: one xlarge (4 vCPU) is ample for 63 MB of input, sized to the data rather than padded.
 
 ARM compatibility was confirmed before migrating: numpy ships aarch64 wheels (pinned in uv.lock) and the bootstrap installs only pure-Python boto3.
 
