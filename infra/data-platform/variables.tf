@@ -117,7 +117,7 @@ variable "emr_core_instance_count" {
 variable "emr_core_bid_price" {
   type        = string
   description = "Spot bid price for core nodes (USD/h). Empty string = On-Demand. Set to m7g.xlarge On-Demand as ceiling so Spot always allocates."
-  default     = "0.1632"
+  default     = "0.164"
 }
 
 variable "emr_idle_timeout_seconds" {
