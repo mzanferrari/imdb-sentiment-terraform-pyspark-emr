@@ -102,11 +102,22 @@ data-platform: ## Apply the data-platform stack (runs the EMR cluster)
 
 deploy: ingest package bootstrap data-platform ## Full deploy: ingest data + package code + bootstrap + data-platform
 
-destroy: ## Destroy ALL resources (data-platform then bootstrap)
-	@echo "WARNING: this will destroy ALL provisioned resources."
+destroy: ## Destroy the data-platform stack (app bucket auto-emptied; state bucket kept)
+	@echo "WARNING: this destroys the data-platform stack and empties the app bucket."
 	@read -p "Type 'destroy' to confirm: " confirm && [ "$$confirm" = "destroy" ] || (echo "Aborted." && exit 1)
-	cd $(INFRA_PLATFORM_DIR) && $(TF) destroy -auto-approve || true
-	cd $(INFRA_BOOTSTRAP_DIR) && $(TF) destroy -auto-approve || true
+	@echo "Emptying the app bucket (pipeline data is reproducible)..."
+	scripts/empty_versioned_bucket.sh "$$(cd $(INFRA_PLATFORM_DIR) && $(TF) output -raw bucket_name 2>/dev/null)" || true
+	cd $(INFRA_PLATFORM_DIR) && $(TF) destroy -auto-approve
+	@echo ""
+	@echo "Data-platform destroyed. The state bucket is preserved (versioned as a"
+	@echo "safety net, not force-destroyed). To remove it too: make destroy-state"
+
+destroy-state: ## Empty and destroy the versioned Terraform state bucket (deliberate, irreversible)
+	@echo "WARNING: this empties and destroys the Terraform STATE bucket - your"
+	@echo "infrastructure's source of truth. Only after the data-platform is gone."
+	@read -p "Type 'destroy-state' to confirm: " confirm && [ "$$confirm" = "destroy-state" ] || (echo "Aborted." && exit 1)
+	scripts/empty_versioned_bucket.sh "$$(cd $(INFRA_BOOTSTRAP_DIR) && $(TF) output -raw state_bucket_name 2>/dev/null)" || true
+	cd $(INFRA_BOOTSTRAP_DIR) && $(TF) destroy -auto-approve
 
 # ─── DOCKER ───────────────────────────────────────────────────────────────────
 docker-build: ## Build the dev container image
