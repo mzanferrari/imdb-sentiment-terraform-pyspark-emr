@@ -273,7 +273,7 @@ Mitigations active:
 - Right-sized Graviton instances (m7g.xlarge master and cores; ARM, ~11-19% cheaper than x86 equivalent)
 - Spot for core nodes (~70% discount, interruption-tolerant for stateless map work)
 - `auto_termination_policy` with 10-minute idle timeout
-- `force_destroy` (parametrized, default false) on the project bucket; set true only for throwaway teardown
+- `force_destroy` (parametrized, default false) on the project bucket; teardown empties versioned buckets explicitly via `scripts/empty_versioned_bucket.sh` (see DEPLOYMENT Step 8)
 - Budget alarm + idle-cluster CloudWatch alarm (modules/finops + emr IsIdle)
 
 Mitigations planned (H2):

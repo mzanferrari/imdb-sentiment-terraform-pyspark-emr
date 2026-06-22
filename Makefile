@@ -27,7 +27,7 @@ help: ## Show this help message
 
 # ─── PYTHON ENVIRONMENT ───────────────────────────────────────────────────────
 install: ## Install Python dependencies via uv (recommended)
-	$(UV) sync --all-extras
+	$(UV) sync --extra dev
 	$(UV) run pre-commit install
 
 install-pip: ## Fallback install via pip (no uv available)
