@@ -68,7 +68,8 @@ resource "aws_s3_bucket_public_access_block" "state_block" {
 # this file via `terraform init -backend-config=scripts/backend.conf`.
 
 resource "local_file" "backend_conf" {
-  filename = "${path.module}/../data-platform/scripts/backend.conf"
+  filename        = "${path.module}/../data-platform/scripts/backend.conf"
+  file_permission = "0644"
 
   content = <<-EOT
     region = "${aws_s3_bucket.terraform_state.region}"

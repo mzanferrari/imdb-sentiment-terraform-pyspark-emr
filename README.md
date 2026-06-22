@@ -126,7 +126,8 @@ flowchart LR
 │       ├── ml.py                       # Model training & evaluation
 │       └── s3_io.py                    # S3 upload helpers
 ├── scripts/
-│   ├── bootstrap_emr.sh                # Conda + Python deps on EMR cluster
+│   ├── bootstrap_emr.sh                # Python deps (pip) on EMR cluster nodes
+│   ├── empty_versioned_bucket.sh       # Purge S3 object versions for teardown
 │   └── ingest_data.py                  # Automated dataset download
 ├── tests/
 │   ├── conftest.py                     # Shared pytest fixtures
@@ -146,7 +147,8 @@ flowchart LR
 │       ├── 0005-cost-guardrails.md
 │       ├── 0006-containerized-dev-environment.md
 │       ├── 0007-sso-state-access.md
-│       └── 0008-emr-service-role-policy.md
+│       ├── 0008-emr-service-role-policy.md
+│       └── 0009-versioned-bucket-teardown.md
 ├── data/                               # gitignored; populated by ingest_data.py
 ├── .github/
 │   └── workflows/
@@ -235,6 +237,14 @@ aws s3 cp s3://<your-bucket>/output/ ./output/ --recursive
 ```bash
 make destroy
 ```
+
+Empties the app bucket and destroys the data-platform stack. The Terraform state bucket is versioned and kept by design; to remove it too:
+
+```bash
+make destroy-state
+```
+
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for the full teardown rationale.
 
 ---
 

@@ -112,12 +112,10 @@ make data-platform
 
 Equivalent to:
 
-First, create your backend config from the template (the real file is gitignored - it holds your state bucket name):
+The bootstrap stage already generated `scripts/backend.conf` (it holds your state bucket name and is gitignored). Just initialize against it:
 
 ```bash
 cd infra/data-platform
-cp scripts/backend.conf.example scripts/backend.conf
-# edit scripts/backend.conf with your state bucket from the bootstrap stage
 terraform init -backend-config=scripts/backend.conf
 terraform plan
 terraform apply
@@ -280,7 +278,6 @@ aws s3 cp s3://$BUCKET/logs/$CLUSTER_ID/node/<instance-id>/setup-devel.gz - | gu
 Common causes:
 
 - Network egress blocked (check security group rules and NACLs)
-- Miniconda URL unreachable (rare; usually retry succeeds)
 - `pip install` rate-limited from PyPI (mitigate by pinning a mirror)
 
 ### `Spot interruption` aborted the job
