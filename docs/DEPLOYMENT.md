@@ -156,6 +156,37 @@ aws emr list-steps --cluster-id "$CLUSTER_ID" \
   --query 'Steps[].{Name:Name,State:Status.State}'
 ```
 
+### Watching a run in real time
+
+Three ways, simplest to most detailed.
+
+**Poll the step status** - no extra tooling, refreshing every 15s:
+
+```bash
+CLUSTER_ID=$(cd infra/data-platform && terraform output -raw emr_cluster_id)
+watch -n 15 "aws emr list-steps --cluster-id $CLUSTER_ID \
+  --query 'Steps[].{Name:Name,State:Status.State}' --output table"
+```
+
+**Read the pipeline logs from S3** - a few minutes' delay, since EMR syncs periodically. The Spark step's stdout holds the model accuracies:
+
+```bash
+BUCKET=$(cd infra/data-platform && terraform output -raw bucket_name)
+aws s3 ls "s3://$BUCKET/logs/$CLUSTER_ID/steps/" --recursive
+# copy and gunzip the stdout.gz of the Spark step
+```
+
+**Open a shell on the master node** - true real-time, needs the Session Manager plugin:
+
+```bash
+MASTER=$(aws emr list-instances --cluster-id $CLUSTER_ID \
+  --instance-group-types MASTER --query 'Instances[0].Ec2InstanceId' --output text)
+aws ssm start-session --target "$MASTER"
+# inside: tail -f /var/log/hadoop-yarn/...
+```
+
+The first two need only the AWS CLI; the shell option needs the Session Manager plugin (a one-time install, see the AWS docs).
+
 ---
 
 ## Step 7 - Verify outputs
@@ -166,9 +197,9 @@ After cluster termination:
 BUCKET=$(aws ssm get-parameter --name /mz-p2/bucket_name --query 'Parameter.Value' --output text)
 
 # Featurized datasets (Parquet, partitioned by label)
-+aws s3 ls s3://$BUCKET/data/HTFfeaturizedData/   --recursive | head
-+aws s3 ls s3://$BUCKET/data/TFIDFfeaturizedData/ --recursive | head
-+aws s3 ls s3://$BUCKET/data/W2VfeaturizedData/   --recursive | head
+aws s3 ls s3://$BUCKET/data/HTFfeaturizedData/   --recursive | head
+aws s3 ls s3://$BUCKET/data/TFIDFfeaturizedData/ --recursive | head
+aws s3 ls s3://$BUCKET/data/W2VfeaturizedData/   --recursive | head
 
 # Trained models
 aws s3 ls s3://$BUCKET/output/ --recursive
@@ -181,18 +212,32 @@ aws s3 cp s3://$BUCKET/logs/ ./logs-local/ --recursive
 
 ## Step 8 - Teardown
 
+Teardown is two deliberate steps, one per bucket type.
+
 ```bash
 make destroy
 ```
 
-Equivalent to:
+Asks for confirmation, empties the app bucket (pipeline data is reproducible), and destroys the data-platform stack. The Terraform state bucket is left intact - it is versioned as a safety net and is not force-destroyed.
+
+To remove the state bucket as well (a separate, deliberate act):
 
 ```bash
-cd infra/data-platform
-terraform destroy   # removes EMR, IAM, SSM, S3 bucket (with force_destroy)
+make destroy-state
+```
 
-cd ../bootstrap
-terraform destroy   # removes the Terraform state bucket itself
+This has its own confirmation and empties the versioned bucket before destroying it. Run it only after the data-platform stack is already gone.
+
+Why two steps: a versioned bucket cannot be deleted while it holds object versions, and neither `aws s3 rb --force` nor Terraform `force_destroy` removes historical versions - only an explicit purge does. The app bucket is emptied automatically because its data is reproducible; the state bucket, your source of truth, is kept until you remove it on purpose.
+
+Manual equivalent, without the Make targets:
+
+```bash
+scripts/empty_versioned_bucket.sh "$(cd infra/data-platform && terraform output -raw bucket_name)"
+cd infra/data-platform && terraform destroy
+# later, to remove the state bucket too:
+scripts/empty_versioned_bucket.sh "$(cd infra/bootstrap && terraform output -raw state_bucket_name)"
+cd infra/bootstrap && terraform destroy
 ```
 
 After this, your AWS account is back to zero project-related resources. Verify in the Billing console after 24 hours that no charges continue to accrue.
