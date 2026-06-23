@@ -316,7 +316,7 @@ Plus: zero idle cost, zero cluster management. See [`docs/adrs/0003-emr-deployme
 
 ### Budget and idle-cluster alarms - provisioned by Terraform
 
-Cost guardrails ship as code in `modules/finops` (account monthly budget with SNS alerts at 80% forecast and 100% actual) plus a CloudWatch `IsIdle` alarm in `modules/emr` that fires if a cluster sits idle for 15 minutes (a second layer behind `auto_termination_policy`). To receive the alerts, set `alert_email` in your gitignored `terraform.tfvars`; Terraform creates the SNS subscription and AWS sends a one-time confirmation link.
+Cost guardrails ship as code in `modules/finops` (account monthly budget with SNS alerts at 80% forecast and 100% actual) plus a CloudWatch `IsIdle` alarm in `modules/emr` that fires if a cluster sits idle for 15 minutes (a second layer behind `auto_termination_policy`). To receive the alerts, set `alert_email` in your gitignored `terraform.tfvars`; Terraform creates the SNS subscription and AWS sends a one-time confirmation link. AWS sends a one-time confirmation link. No manual budget setup is needed. An invalid address fails at `terraform plan`, before any resource is created.
 
 ---
 
