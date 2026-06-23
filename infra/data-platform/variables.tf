@@ -83,7 +83,7 @@ variable "alert_email" {
   default     = ""
 
   validation {
-    condition     = var.alert_email == "" || can(regex("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", var.alert_email))
+    condition     = var.alert_email == "" || can(regex("^[A-Za-z0-9_+-]+(\\.[A-Za-z0-9_+-]+)*@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$", var.alert_email))
     error_message = "alert_email must be empty (no subscription) or a valid email address."
   }
 }
