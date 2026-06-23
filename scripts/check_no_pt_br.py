@@ -6,30 +6,31 @@ Mixed-language artifacts in a public repo dilute the portfolio signal.
 
 The check looks for two classes of evidence:
 
-1. **Diacritics** - characters like á é í ó ú ã õ ç that appear almost
-   exclusively in pt-BR (and other Romance languages) inside this project's
-   context. Detection is a strong signal.
+1. **Diacritics** - characters like a e i o u a o c with accents that appear
+   almost exclusively in pt-BR (and other Romance languages) inside this
+   project's context. Detection is a strong signal.
 
-2. **PT-BR keywords without diacritics** - common Portuguese words that have
-   no English homograph and slip past diacritic scanning (e.g., "execução"
-   becoming "execucao" in someone's hurried typing).
+2. **PT-BR keywords without diacritics** - common Portuguese words with no
+   English homograph that slip past diacritic scanning (e.g., "execucao"
+   typed without its accent).
 
-The hook **never** scans:
+Scope:
 
-- The internal-only documents that legitimately stay in PT-BR
-  (AUDITORIA.md, AUDITORIA_V2.md, AUDITORIA_V3.md, AUDITORIA_V4.md, AUDITORIA_V5.md,
-  ROADMAP_UPGRADE.md, CODE_COMMENTS_GUIDE.md, GUIA_DE_USO_DESTA_AUDITORIA.md)
-- Generated directories (data/, logs/, .terraform/, build/, etc.)
-- Binary files (detected via decode failure)
+- With filenames as arguments (the pre-commit path), only those files are
+  scanned. Pre-commit passes the staged, tracked files it selected by type.
+- Without arguments (the Makefile/CI path), the scan covers the files tracked
+  by git, matching the configured extensions. Internal-only documents are
+  gitignored, so they are never tracked and never scanned - no per-file
+  exclusion list is needed.
+
+Generated directories and binary files are skipped (the former are not tracked;
+the latter are detected via decode failure).
 
 Usage (manual):
     python scripts/check_no_pt_br.py [file1.py file2.tf ...]
 
-Without arguments, scans every tracked file matching the configured globs.
-
-Pre-commit hook entry (already wired in `.pre-commit-config.yaml`):
+Pre-commit hook entry (wired in `.pre-commit-config.yaml`):
     - id: check-no-pt-br
-      name: No PT-BR in repo-public files
       entry: python scripts/check_no_pt_br.py
       language: system
       pass_filenames: true
@@ -43,6 +44,8 @@ Exit codes:
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 import sys
 from pathlib import Path
 from typing import Final
@@ -52,44 +55,60 @@ from typing import Final
 PT_DIACRITICS: Final[frozenset[str]] = frozenset("áéíóúâêîôûãõàçÁÉÍÓÚÂÊÎÔÛÃÕÀÇ")
 
 # Words common in PT-BR with no English homograph. Case-insensitive matching.
-# Conservative list - false positives are worse than missed catches in a hook.
+# Conservative by design - in a commit-blocking hook, a false positive (blocking
+# a valid English commit) is worse than a missed catch, so every entry here must
+# be a token that does not also occur in normal English or technical usage.
 PT_KEYWORDS: Final[tuple[str, ...]] = (
+    # Verbs and participles with no English homograph
     r"\busadas?\b",
-    r"\busado\b",
-    r"\busados\b",
-    r"\bsera\b",  # "sera" (will be) without accent
-    r"\bserao\b",  # "serao" (they will be) without accent
-    r"\btambem\b",  # "tambem" (also) without accent
-    r"\bnao\b",  # "nao" (no/not) without accent - distinctive in PT-BR
+    r"\busados?\b",
+    r"\bsera\b",
+    r"\bserao\b",
+    r"\bgeradas?\b",
+    r"\bgerados?\b",
+    r"\bcompactadas?\b",
+    r"\bcompactados?\b",
+    r"\bsubstitui\b",
+    r"\badicionado\b",
+    r"\badicionada\b",
+    r"\bremovido\b",
+    r"\bremovida\b",
+    # Nouns with no English homograph
     r"\bmodulo\b",
     r"\bmodulos\b",
     r"\bvariavel\b",
     r"\bvariaveis\b",
+    r"\bexecucao\b",
+    r"\bversao\b",
+    r"\bversoes\b",
+    r"\bregiao\b",
+    r"\bregioes\b",
+    r"\bpacote\b",
+    r"\bpacotes\b",
+    r"\barquivo\b",
+    r"\barquivos\b",
+    r"\bsenha\b",
+    # Adjectives with no English homograph
     r"\breproduzivel\b",
     r"\breproduziveis\b",
     r"\bminimo\b",
     r"\bminima\b",
     r"\bconfiguravel\b",
     r"\bconfiguraveis\b",
-    r"\bexecucao\b",
-    r"\bversao\b",
-    r"\bversoes\b",
-    r"\bregiao\b",
-    r"\bpacote\b",
-    r"\bpacotes\b",
-    r"\barquivo\b",
-    r"\barquivos\b",
-    r"\bdados\b",
     r"\bmoderno\b",
     r"\bmoderna\b",
     r"\brecomendado\b",
     r"\brecomendada\b",
-    r"\bsubstitui\b",
-    r"\bgeradas?\b",
-    r"\bgerados?\b",
-    r"\bcompactados?\b",
-    r"\bcompactadas?\b",
     r"\bopcional\b",
+    r"\bnecessario\b",
+    r"\bnecessaria\b",
+    r"\bproprio\b",
+    r"\bpropria\b",
+    # Function words distinctive in PT-BR (no English homograph)
+    r"\bnao\b",
+    r"\btambem\b",
+    r"\bporque\b",
+    r"\bentao\b",
     r"\bfuturo\b",
     # Phrases that strongly indicate PT-BR
     r"\bpath_dados\b",
@@ -100,7 +119,7 @@ PT_KEYWORDS: Final[tuple[str, ...]] = (
     r"\btoda\s+(segunda|terca|quarta|quinta|sexta)\b",
 )
 
-# Compile once for performance
+# Compile once for performance.
 _PT_KEYWORD_PATTERN: Final[re.Pattern[str]] = re.compile(
     "|".join(PT_KEYWORDS),
     re.IGNORECASE,
@@ -108,41 +127,7 @@ _PT_KEYWORD_PATTERN: Final[re.Pattern[str]] = re.compile(
 
 # ─── WHAT FILES ARE SCANNED ───────────────────────────────────────────────────
 
-# Files (basename) that legitimately stay in PT-BR - they never go to the public repo.
-INTERNAL_ONLY_FILES: Final[frozenset[str]] = frozenset(
-    {
-        "AUDITORIA.md",
-        "AUDITORIA_V2.md",
-        "AUDITORIA_V3.md",
-        "AUDITORIA_V4.md",
-        "AUDITORIA_V5.md",
-        "ROADMAP_UPGRADE.md",
-        "CODE_COMMENTS_GUIDE.md",
-        "GUIA_DE_USO_DESTA_AUDITORIA.md",
-        "GUIA_EXECUCAO_FASES_0_1.md",
-    }
-)
-
-# Directories never scanned regardless of contents
-EXCLUDED_DIRS: Final[frozenset[str]] = frozenset(
-    {
-        ".git",
-        "data",
-        "logs",
-        "build",
-        "dist",
-        "__pycache__",
-        ".venv",
-        "venv",
-        ".terraform",
-        "node_modules",
-        ".pytest_cache",
-        ".mypy_cache",
-        ".ruff_cache",
-    }
-)
-
-# Default extensions scanned when no explicit filenames are passed
+# Extensions scanned when no explicit filenames are passed.
 DEFAULT_EXTENSIONS: Final[frozenset[str]] = frozenset(
     {
         ".py",
@@ -161,7 +146,7 @@ DEFAULT_EXTENSIONS: Final[frozenset[str]] = frozenset(
     }
 )
 
-# Filenames without extension that should be scanned
+# Extensionless filenames that should be scanned.
 DEFAULT_FILENAMES: Final[frozenset[str]] = frozenset(
     {
         "Makefile",
@@ -169,25 +154,42 @@ DEFAULT_FILENAMES: Final[frozenset[str]] = frozenset(
     }
 )
 
+# This script holds PT-BR diacritics and keywords in its own detection rules,
+# so it must never scan itself.
+SELF_NAME: Final[str] = "check_no_pt_br.py"
+
 
 # ─── CORE ─────────────────────────────────────────────────────────────────────
 
 
-def should_scan(path: Path) -> bool:
-    """Decide whether a path is in scope for the check."""
-    if not path.is_file():
-        return False
-    if path.name in INTERNAL_ONLY_FILES:
-        return False
-    # Skip the checker itself - it legitimately contains diacritics in its
-    # detection rules (which would otherwise trigger the checker on itself).
-    if path.name == "check_no_pt_br.py":
-        return False
-    if any(part in EXCLUDED_DIRS for part in path.parts):
+def in_scope_by_name(path: Path) -> bool:
+    """Decide whether a path's name/extension is in scope for the check."""
+    if path.name == SELF_NAME:
         return False
     if path.name in DEFAULT_FILENAMES:
         return True
     return path.suffix in DEFAULT_EXTENSIONS
+
+
+def git_tracked_files() -> list[Path]:
+    """Return the repo's git-tracked files, or raise if git is unavailable.
+
+    Tracked files exclude anything gitignored (the internal PT-BR documents),
+    so scanning this set needs no per-file exclusion list. The git executable
+    is resolved to an absolute path so the call does not depend on PATH lookup.
+    """
+    git = shutil.which("git")
+    if git is None:
+        raise FileNotFoundError("git executable not found on PATH")
+    # The command is a fixed literal (resolved git path + constant args); there is
+    # no user-controlled input in the argument vector, so this call is safe.
+    result = subprocess.run(  # noqa: S603
+        [git, "ls-files", "-z"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    return [Path(name) for name in result.stdout.split("\0") if name]
 
 
 def scan_file(path: Path) -> list[tuple[int, str, str]]:
@@ -210,34 +212,39 @@ def scan_file(path: Path) -> list[tuple[int, str, str]]:
     return findings
 
 
-def collect_paths_from_args(argv: list[str]) -> list[Path]:
-    """Return paths to scan based on CLI argv."""
+def collect_paths(argv: list[str]) -> list[Path]:
+    """Resolve the set of files to scan.
+
+    With argv, scan exactly those files that exist and are in scope by name.
+    Without argv, scan the git-tracked files in scope.
+    """
     if argv:
-        return [Path(p) for p in argv if Path(p).exists()]
-    # No args - walk current directory
-    return [p for p in Path().rglob("*") if should_scan(p)]
+        return [p for arg in argv if (p := Path(arg)).is_file() and in_scope_by_name(p)]
+    return [p for p in git_tracked_files() if p.is_file() and in_scope_by_name(p)]
 
 
 def main(argv: list[str] | None = None) -> int:
     """Entry point. Returns process exit code."""
     argv = argv if argv is not None else sys.argv[1:]
-    paths = collect_paths_from_args(argv)
+
+    try:
+        paths = collect_paths(argv)
+    except (subprocess.CalledProcessError, FileNotFoundError) as exc:
+        print(f"check_no_pt_br: could not list git files: {exc}", file=sys.stderr)
+        return 2
 
     failures = 0
     for path in paths:
-        if not should_scan(path):
-            continue
         for lineno, kind, line in scan_file(path):
             failures += 1
-            # Truncate the printed line so very long lines don't drown the output
             display_line = line if len(line) <= 120 else line[:117] + "..."
             print(f"{path}:{lineno}: [{kind}] {display_line}", file=sys.stderr)
 
     if failures:
         print(
             f"\n{failures} PT-BR finding(s) in repo-public files.\n"
-            "Translate the text to English or, if the file is internal-only, "
-            "add its basename to INTERNAL_ONLY_FILES in scripts/check_no_pt_br.py.",
+            "Translate the text to English. Internal-only documents are "
+            "gitignored and are not scanned.",
             file=sys.stderr,
         )
         return 1

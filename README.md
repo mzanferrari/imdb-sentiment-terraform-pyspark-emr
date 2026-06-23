@@ -127,6 +127,7 @@ flowchart LR
 │       └── s3_io.py                    # S3 upload helpers
 ├── scripts/
 │   ├── bootstrap_emr.sh                # Python deps (pip) on EMR cluster nodes
+│   ├── check_no_pt_br.py               # Pre-commit hook: block PT-BR in public files
 │   ├── empty_versioned_bucket.sh       # Purge S3 object versions for teardown
 │   └── ingest_data.py                  # Automated dataset download
 ├── tests/
@@ -139,6 +140,7 @@ flowchart LR
 ├── docs/
 │   ├── ARCHITECTURE.md                 # System design rationale
 │   ├── DEPLOYMENT.md                   # Step-by-step deployment guide
+│   ├── ROADMAP.md                      # Planned evolution by phase
 │   └── adrs/                           # Architecture Decision Records
 │       ├── 0001-iac-tool.md
 │       ├── 0002-aws-region.md
