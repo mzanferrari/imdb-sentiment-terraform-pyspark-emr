@@ -271,21 +271,38 @@ The cluster terminates automatically after the last step completes (`keep_job_fl
 
 ---
 
+## Results
+
+The pipeline was deployed from a clean clone and run end to end on AWS, twice, to confirm reproducibility. Three sentiment classifiers are trained on 50,000 IMDB reviews; Word2Vec features lead at 87% accuracy.
+
+| Featurization | Accuracy |
+|---|---|
+| Word2Vec | 87.07% |
+| HashingTF | 72.34% |
+| TF-IDF | 72.34% |
+
+Results are bit-for-bit identical across two independent clusters (deterministic: fixed seed, explicit ordering, version-pinned runtime). A full run completes in about 13 minutes for roughly $0.074, measured in Cost Explorer.
+
+See [`RESULTS.md`](RESULTS.md) for per-run infrastructure metrics and the full cost breakdown.
+
+---
+
 ## Cost Estimate
 
-> All estimates in USD for `eu-west-1`, May 2026 pricing. Cross-reference with [AWS Pricing Calculator](https://calculator.aws/) before deployment.
+> Measured cost in `eu-west-1`, from AWS Cost Explorer across two validated runs on 2026-06-19. The earlier May 2026 estimate (~$0.12/run) was conservative; the measured figure is lower. Cross-reference with the [AWS Pricing Calculator](https://calculator.aws/) for other configurations.
 
-### Default config (EMR-on-EC2, right-sized, Graviton)
+### Default config (EMR-on-EC2, right-sized, Graviton) - measured
 
-| Resource | Spec | $/h | Run duration | Cost/run |
-|---|---|---|---|---|
-| Master | m7g.xlarge (4 vCPU, 16 GB, Graviton) On-Demand | ~$0.163 | ~30 min | ~$0.08 |
-| Core (×1) | m7g.xlarge (4 vCPU, 16 GB, Graviton) Spot | ~$0.082 | ~25 min | ~$0.03 |
-| S3 storage | ~100 MB at $0.023/GB-mo | - | per month | <$0.01/mo |
-| Data transfer | EU intra-region | $0 | - | $0 |
-| **Total per run** | | | | **~$0.12** |
+| Component | Cost/run |
+|---|---|
+| EC2 instances (master On-Demand + core Spot) | $0.0536 |
+| EMR uplift | $0.0117 |
+| EBS volumes | $0.0050 |
+| VPC | $0.0022 |
+| S3 (storage + requests) | $0.0020 |
+| **Total per run** | **$0.074** |
 
-10 runs/month for portfolio demos: **~$1.20/month**.
+A run lasts about 13 minutes (provisioning to auto-termination), billed per second. 10 runs/month for portfolio demos: **~$0.74/month**. See [`RESULTS.md`](RESULTS.md) for the per-run methodology.
 
 ### EMR Serverless variant (recommended for sporadic workloads)
 

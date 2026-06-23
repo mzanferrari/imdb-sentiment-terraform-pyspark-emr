@@ -15,12 +15,13 @@ Hardening, observability, and documentation.
 - [x] Automated dataset ingestion (idempotent, SHA256-verified)
 - [x] CI: lint (ruff), type check (mypy), tests (pytest), IaC validate (terraform fmt + tflint + trivy), secret scan (gitleaks)
 - [x] Pre-commit hooks for the same suite
-- [x] Architecture Decision Records (6 published)
+- [x] Architecture Decision Records (9 published)
 - [x] Right-sized EMR cluster with Spot Graviton core nodes and auto-termination
 - [x] EU region as default (`eu-west-1`)
 - [x] AWS Budget alarm and idle-cluster CloudWatch alarm via Terraform
 - [x] Unit tests for `ml.py` training helpers (CrossValidator setup, model persistence, `TrainResult` shape) - only pipeline module without dedicated coverage
 - [x] Containerized dev environment: multi-stage Dockerfile (Python 3.11, Java 17, Terraform 1.15, tooling), docker-compose with isolated venv, devcontainer for VS Code
+- [x] End-to-end deploy validated twice from a clean clone on AWS: full pipeline run (3 models, Word2Vec 87% accuracy), deterministic across runs, measured cost ~$0.074/run, clean teardown
 - [ ] Nightly CI workflow running the slow ML training suite (`pytest -m slow`), separated from PR CI to keep fast feedback
 - [ ] Network hardening for EMR: S3 gateway VPC endpoint (zero-cost, keeps S3 traffic in-VPC) and HTTPS-only egress to the internet. Interface endpoints (STS/SSM) deferred on cost grounds for a sporadic, auto-terminating cluster - to be recorded in an ADR
 
