@@ -62,7 +62,7 @@ These `.tfvars` files are gitignored. They will **never** be committed. Keep the
 
 ## Step 2 - Cost alerts
 
-The monthly budget alarm is provisioned by Terraform (`modules/finops`). To receive notifications, set `alert_email` in your gitignored `terraform.tfvars` before applying the data-platform stack; Terraform creates the SNS subscription and AWS sends a one-time confirmation link. No manual budget setup is needed.
+The monthly budget alarm is provisioned by Terraform (`modules/finops`). To receive notifications, set `alert_email` in your gitignored `terraform.tfvars` before applying the data-platform stack; Terraform creates the SNS subscription and AWS sends a one-time confirmation link. No manual budget setup is needed. An invalid address fails at `terraform plan`, before any resource is created.
 
 ---
 

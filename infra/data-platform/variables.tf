@@ -81,6 +81,11 @@ variable "alert_email" {
   type        = string
   description = "Email for cost alerts. Set in terraform.tfvars (gitignored), not here."
   default     = ""
+
+  validation {
+    condition     = var.alert_email == "" || can(regex("^[^@[:space:]]+@[^@[:space:]]+\\.[^@[:space:]]+$", var.alert_email))
+    error_message = "alert_email must be empty (no subscription) or a valid email address."
+  }
 }
 
 variable "monthly_budget_usd" {
