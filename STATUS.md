@@ -59,7 +59,7 @@ Phase mapping: H1 = ROADMAP Phase 1; H2 = Phases 2-3; H3 = Phase 4.
 
 ### Documentation
 
-- [x] Professional `README.md` with Mermaid architecture diagram
+- [x] Professional `README.md` with architecture diagram (diagram-as-code, AWS icons)
 - [x] `docs/ARCHITECTURE.md`
 - [x] `docs/DEPLOYMENT.md`
 - [x] 9 ADRs (`0001`-`0009`)
