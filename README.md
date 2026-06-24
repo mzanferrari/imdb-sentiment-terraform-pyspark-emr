@@ -273,7 +273,7 @@ The cluster terminates automatically after the last step completes (`keep_job_fl
 
 ## Results
 
-The pipeline was deployed from a clean clone and run end to end on AWS, twice, to confirm reproducibility. Three sentiment classifiers are trained on 50,000 IMDB reviews; Word2Vec features lead at 87% accuracy.
+The pipeline was deployed from a clean clone and run end to end on AWS, three times, to confirm reproducibility. Three sentiment classifiers are trained on 50,000 IMDB reviews; Word2Vec features lead at 87% accuracy.
 
 | Featurization | Accuracy |
 |---|---|
@@ -281,7 +281,7 @@ The pipeline was deployed from a clean clone and run end to end on AWS, twice, t
 | HashingTF | 72.34% |
 | TF-IDF | 72.34% |
 
-Results are bit-for-bit identical across two independent clusters (deterministic: fixed seed, explicit ordering, version-pinned runtime). A full run completes in about 13 minutes for roughly $0.074, measured in Cost Explorer.
+Results are bit-for-bit identical across three independent clusters (deterministic: fixed seed, explicit ordering, version-pinned runtime). A full run completes in about 13 minutes for roughly $0.074, measured in Cost Explorer.
 
 See [`RESULTS.md`](RESULTS.md) for per-run infrastructure metrics and the full cost breakdown.
 

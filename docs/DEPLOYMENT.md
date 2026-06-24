@@ -180,7 +180,8 @@ aws s3 ls "s3://$BUCKET/logs/$CLUSTER_ID/steps/" --recursive
 MASTER=$(aws emr list-instances --cluster-id $CLUSTER_ID \
   --instance-group-types MASTER --query 'Instances[0].Ec2InstanceId' --output text)
 aws ssm start-session --target "$MASTER"
-# inside: tail -f /var/log/hadoop-yarn/...
+# inside, follow the running step's stdout (the pipeline logs, with accuracies):
+# sudo tail -f /mnt/var/log/hadoop/steps/*/stdout
 ```
 
 The first two need only the AWS CLI; the shell option needs the Session Manager plugin (a one-time install, see the AWS docs).
