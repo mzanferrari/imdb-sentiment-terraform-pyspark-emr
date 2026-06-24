@@ -200,3 +200,8 @@ exclude_lines = [
     "raise NotImplementedError",
     "if __name__ == .__main__.:",
 ]
+
+[dependency-groups]
+docs = [
+    "diagrams>=0.25.1",
+]

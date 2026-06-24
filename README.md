@@ -42,38 +42,59 @@
 
 ## Architecture
 
+![Architecture diagram](docs/diagrams/architecture.png)
+
+*End-to-end data engineering portfolio project: Terraform IaC + PySpark on Amazon EMR for IMDB sentiment analysis. The diagram is generated as code with [mingrammer/diagrams](https://diagrams.mingrammer.com/); regenerate with `uv run --extra docs python docs/diagrams/architecture_diagram.py`.*
+
+<details>
+<summary>Mermaid source (renders natively on GitHub)</summary>
+
 ```mermaid
 flowchart LR
-    subgraph "Local / Dev"
-        Dev[Developer] -->|terraform apply| TF[Terraform CLI]
-        Dev -->|docker compose up| Dock[Dev Container]
-    end
-
-    subgraph "AWS - eu-west-1"
-        TF -->|bootstrap| StateBkt[(S3 Terraform State<br/>encrypted + versioned)]
-        TF -->|data-platform| AppBkt[(S3 Project Bucket)]
-        TF --> IAM[IAM Roles<br/>EMR Service + EC2 Profile]
-        TF --> EMR[EMR Cluster<br/>release 7.13.0]
-
-        AppBkt -->|raw CSV| EMR
-        AppBkt -.->|scripts| EMR
-        EMR -->|features parquet| AppBkt
-        EMR -->|models| AppBkt
-        EMR -->|logs| AppBkt
-
-        SSM[SSM Parameter Store<br/>config & paths] --> EMR
-    end
-
-    subgraph "External"
+    subgraph EXT["**EXTERNAL**"]
         IMDB[IMDB Reviews Dataset<br/>50k labeled reviews]
-        IMDB -->|automated download| Dev
     end
+    subgraph DEV["**LOCAL | DEV**"]
+        Dev[Developer]
+        Dock[Dev Container]
+        TF[Terraform CLI]
+    end
+    subgraph AWS["**AWS (eu-west-1)**"]
+        StateBkt[(S3 Terraform State<br/>encrypted + versioned)]
+        AppBkt[(S3 Project Bucket)]
+        IAM[IAM Roles<br/>EMR Service + EC2 Profile]
+        SSM[SSM Parameter Store<br/>config & paths]
+        EMR[EMR Cluster<br/>release 7.13.0]
+    end
+    IMDB -->|"[1] download"| Dev
+    Dev -->|"[2] compose up"| Dock
+    Dock -->|"[3] apply"| TF
+    TF -->|"[4] bootstrap"| StateBkt
+    TF -->|"[5] data-platform"| AppBkt
+    TF --> IAM
+    TF -->|"[6] provision"| EMR
+    AppBkt -->|"[7] raw CSV"| EMR
+    AppBkt -.->|"[8] scripts"| EMR
+    EMR -->|"[9] features + models + logs"| AppBkt
+    IAM -.-> EMR
+    SSM -.-> EMR
 
-    classDef aws fill:#FF9900,stroke:#232F3E,color:#000
-    classDef storage fill:#3F8624,stroke:#232F3E,color:#fff
-    class EMR,IAM,SSM aws
+    classDef dev fill:#2496ED,stroke:#1A6BB0,color:#fff
+    classDef iac fill:#7B42BC,stroke:#5A2E8C,color:#fff
+    classDef storage fill:#3F8624,stroke:#2C5E19,color:#fff
+    classDef compute fill:#EE6A23,stroke:#B14E18,color:#fff
+    classDef security fill:#C7252A,stroke:#8F1A1E,color:#fff
+    classDef external fill:#ECEFF4,stroke:#4C566A,color:#2E3440
+
+    class Dock dev
+    class TF iac
     class StateBkt,AppBkt storage
+    class EMR compute
+    class IAM,SSM security
+    class IMDB external
 ```
+
+</details>
 
 **Two-stage Terraform deployment.** Bootstrap creates the remote state bucket; the main stack reads from it. This pattern avoids the chicken-and-egg of "where does the state of the state bucket live".
 
@@ -141,6 +162,8 @@ flowchart LR
 │   ├── ARCHITECTURE.md                 # System design rationale
 │   ├── DEPLOYMENT.md                   # Step-by-step deployment guide
 │   ├── ROADMAP.md                      # Planned evolution by phase
+│   ├── diagrams/                       # Architecture diagram as code
+│   │   └── architecture_diagram.py
 │   └── adrs/                           # Architecture Decision Records
 │       ├── 0001-iac-tool.md
 │       ├── 0002-aws-region.md
