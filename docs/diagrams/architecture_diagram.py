@@ -52,6 +52,7 @@ _GRAPH_ATTR = {
     "fontsize": "22",
     "labelloc": "t",
     "labeljust": "l",
+    "fontcolor": "#4C566A",
     "splines": "spline",
     # concentrate is OFF: confirmed incompatible with EMR inside the cluster
     # (Graphviz raises "degenerate concentrated rank" when a concentrated edge
@@ -59,7 +60,7 @@ _GRAPH_ATTR = {
     "nodesep": "0.6",
     "ranksep": "2.2",
     "pad": "0.6",
-    "bgcolor": "white",
+    "bgcolor": "#ECEFF4",
 }
 
 _CLUSTER_ATTR = {
@@ -68,11 +69,17 @@ _CLUSTER_ATTR = {
     "margin": "18",
     "penwidth": "1.2",
     "pencolor": "#B0B7C3",
-    "bgcolor": "#F6F7F9",
+    "bgcolor": "#FBFCFD",
+    "fontcolor": "#2E3440",
 }
 
 _NODE_ATTR = {"fontname": "Helvetica", "fontsize": "11"}
-_EDGE_ATTR = {"fontname": "Helvetica", "fontsize": "11", "color": _SLATE}
+_EDGE_ATTR = {
+    "fontname": "Helvetica",
+    "fontsize": "11",
+    "color": _SLATE,
+    "fontcolor": "#2E3440",
+}
 
 
 def step(n: int, text: str) -> str:
@@ -91,9 +98,10 @@ with Diagram(
     node_attr=_NODE_ATTR,
     edge_attr=_EDGE_ATTR,
 ):
-    # External dataset: a generic rack icon marks it as an outside source,
-    # distinct from our own S3 buckets.
-    imdb = Rack("IMDB dataset\n50k reviews")
+    # External dataset wrapped in its own cluster so the label stays legible on
+    # any theme (a bare node's caption would vanish on a dark background).
+    with Cluster("EXTERNAL", graph_attr=_CLUSTER_ATTR):
+        imdb = Rack("IMDB dataset\n50k reviews")
 
     with Cluster("LOCAL | DEV", graph_attr=_CLUSTER_ATTR):
         dev = Users("Developer")
@@ -129,4 +137,4 @@ with Diagram(
     app_bucket >> Edge(style="dashed", label=step(8, "scripts")) >> emr
     iam >> Edge(style="dotted") >> emr
     ssm >> Edge(style="dotted") >> emr
-    emr >> Edge(label=step(9, "models + logs")) >> app_bucket
+    emr >> Edge(label=step(9, "features + models + logs")) >> app_bucket
