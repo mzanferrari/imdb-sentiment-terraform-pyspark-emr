@@ -51,15 +51,15 @@
 
 ```mermaid
 flowchart LR
-    subgraph EXT["**EXTERNAL**"]
-        IMDB[IMDB Reviews Dataset<br/>50k labeled reviews]
+    subgraph EXT["EXTERNAL"]
+        IMDB[IMDB Dataset<br/>50k reviews]
     end
-    subgraph DEV["**LOCAL | DEV**"]
+    subgraph DEV["LOCAL | DEV"]
         Dev[Developer]
         Dock[Dev Container]
         TF[Terraform CLI]
     end
-    subgraph AWS["**AWS (eu-west-1)**"]
+    subgraph AWS["AWS (eu-west-1)"]
         StateBkt[(S3 Terraform State<br/>encrypted + versioned)]
         AppBkt[(S3 Project Bucket)]
         IAM[IAM Roles<br/>EMR Service + EC2 Profile]
@@ -82,7 +82,7 @@ flowchart LR
     classDef dev fill:#2496ED,stroke:#1A6BB0,color:#fff
     classDef iac fill:#7B42BC,stroke:#5A2E8C,color:#fff
     classDef storage fill:#3F8624,stroke:#2C5E19,color:#fff
-    classDef compute fill:#EE6A23,stroke:#B14E18,color:#fff
+    classDef compute fill:#8C4FFF,stroke:#5A2EA6,color:#fff
     classDef security fill:#C7252A,stroke:#8F1A1E,color:#fff
     classDef external fill:#ECEFF4,stroke:#4C566A,color:#2E3440
 
