@@ -90,7 +90,7 @@ def step(n: int, text: str) -> str:
 # ─── DIAGRAM ──────────────────────────────────────────────────────────────────
 
 with Diagram(
-    "IMDB Sentiment Pipeline",
+    "IMDB Sentiment Pipeline | PySpark on Amazon EMR",
     filename=str(_OUTPUT),
     direction="LR",
     show=False,

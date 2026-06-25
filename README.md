@@ -1,4 +1,6 @@
-# IMDB Sentiment Pipeline - PySpark on Amazon EMR
+<div align="center">
+
+# IMDB Sentiment Pipeline | PySpark on Amazon EMR
 
 > Distributed sentiment analysis pipeline for IMDB movie reviews, provisioned end-to-end with Terraform and orchestrated on Amazon EMR. Built as a portfolio project demonstrating Data Engineering practices for cloud-native, IaC-first, FinOps-aware data platforms.
 
@@ -8,6 +10,8 @@
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![AWS](https://img.shields.io/badge/AWS-EMR%207.13-FF9900?logo=amazonaws&logoColor=white)](https://aws.amazon.com/emr/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+</div>
 
 ---
 
@@ -189,7 +193,9 @@ flowchart LR
 ├── Dockerfile
 ├── docker-compose.yml
 ├── Makefile                            # Common commands
-└── README.md
+├── README.md
+├── STATUS.md                           # Living project status & milestones
+└── RESULTS.md                          # Measured deploy results & cost
 ```
 
 ---
